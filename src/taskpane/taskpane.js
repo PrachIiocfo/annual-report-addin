@@ -1,4 +1,4 @@
-/* global Excel, Office, console, document, docx, URL, fetch, FileReader, Image */
+/* global Excel, Office, console, document, docx, URL, fetch, FileReader, pdfjsLib, ExcelJS */
 /* eslint-disable no-undef */
 
 const BRAND_BLUE = "1E3A8A";
@@ -8,854 +8,458 @@ const DARK_BLUE = "1E3A8A";
 const TEXT_DARK = "1F2937";
 const TEXT_GREY = "646464";
 const BORDER_LIGHT = "B4C8DC";
-const MISSING_RED = "C00000";
-const MISSING_BG = "FFF3CD";
-
-const MISS_OPEN = "\u2620MISS\u2620";
-const MISS_CLOSE = "\u2620/MISS\u2620";
-
-const SCALE_MAP = {
-  "LAKH": 100000,
-  "LAKHS": 100000,
-  "CRORE": 10000000,
-  "CRORES": 10000000,
-  "THOUSAND": 1000,
-  "THOUSANDS": 1000,
-  "MILLION": 1000000,
-  "MILLIONS": 1000000,
-  "BILLION": 1000000000,
-  "NONE": 1,
-  "": 1
-};
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
-    console.log("Office Add-in ready!");
-    const btn = document.getElementById("genBtn");
-    if (btn) btn.disabled = false;
+    console.log("Office ready!");
   }
 });
 
-function getBranding() {
-  return {
-    COMPANY_NAME: (document.getElementById("companyName") || {}).value || "BLUE STAR LIMITED",
-    COMPANY_CIN: (document.getElementById("companyCIN") || {}).value || "",
-    HEADER_RIGHT_TOP: (document.getElementById("headerRightTop") || {}).value || "Financial Statements",
-    HEADER_RIGHT_BOT: (document.getElementById("headerRightBot") || {}).value || "Consolidated",
-    DOC_TITLE: (document.getElementById("docTitle") || {}).value || "Notes to Consolidated Financial Statements",
-    DOC_SUBTITLE: (document.getElementById("docSubtitle") || {}).value || "for the year ended March 31, 2025"
-  };
-}
-
-async function generate() {
+async function downloadTemplate() {
   try {
-    showStatus("Reading Excel data...", "blue");
-    const branding = getBranding();
-
-    const data = await Excel.run(async (context) => {
-      const wb = context.workbook;
-      const paraSheet = wb.worksheets.getItem("Para_ID");
-      const dynSheet = wb.worksheets.getItem("Dynamic Values");
-      const tabSheet = wb.worksheets.getItem("Tables");
-      const landingSheet = wb.worksheets.getItem("Landing_Page");
-
-      let vmRange = null;
-      try {
-        const vmSheet = wb.worksheets.getItem("Version Maintenance");
-        vmRange = vmSheet.getUsedRange();
-        vmRange.load("values");
-      } catch (e) { console.log("VM not found:", e.message); }
-
-      const paraRange = paraSheet.getUsedRange();
-      const dynRange = dynSheet.getUsedRange();
-      const tabRange = tabSheet.getUsedRange();
-      const versionCell = landingSheet.getRange("C2");
-
-      wb.load("name");
-      paraRange.load("values");
-      dynRange.load("values");
-      tabRange.load("values");
-      versionCell.load("values");
-
-      await context.sync();
-
-      return {
-        paragraphs: paraRange.values,
-        dynamics: dynRange.values,
-        tables: tabRange.values,
-        selectedVersion: String((versionCell.values[0][0] || "V1")).trim().toUpperCase(),
-        versionMaint: vmRange ? vmRange.values : null,
-        workbookName: wb.name || "Unknown.xlsx"
-      };
-    });
-
-    console.log("Selected version:", data.selectedVersion);
-    showStatus("Loading logo...", "blue");
-
-    const logoUrl = lookupLogoUrl(data.versionMaint, data.selectedVersion);
-    let logoBase64 = null;
-    let logoDims = { w: 0, h: 0 };
-    if (logoUrl) {
-      logoBase64 = await fetchImageAsBase64(logoUrl);
-      if (logoBase64) {
-        logoDims = await getImageDimensions(logoBase64);
-      }
-    }
-
-    const scaleInfo = lookupScale(data.versionMaint, data.selectedVersion);
-    console.log("Scale for " + data.selectedVersion + ":", scaleInfo);
-
-    showStatus("Building " + data.selectedVersion + " Word document...", "blue");
-
-    const dynMap = buildDynamicMap(data.dynamics, scaleInfo);
-    const tableMap = buildTablesMap(data.tables);
-    const versionDetail = lookupVersionDetail(data.versionMaint, data.selectedVersion);
-    const userName = (Office.context && Office.context.displayName) || "User";
-
-    const missingTracker = { items: [] };
-
-    const metadata = {
-      version: data.selectedVersion,
-      versionDetail: versionDetail,
-      generatedBy: userName,
-      generatedOn: new Date(),
-      workbookName: data.workbookName,
-      logoBase64: logoBase64,
-      logoDims: logoDims,
-      scaleLabel: scaleInfo.label,
-      scaleDivisor: scaleInfo.divisor
-    };
-
-    const blob = await buildWordDoc(data.paragraphs, dynMap, tableMap, branding, data.selectedVersion, metadata, missingTracker);
-
+    const response = await fetch("../../assets/Excel_Template.xlsx");
+    if (!response.ok) { console.log("Template file not found!"); return; }
+    const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "Annual_Report_" + data.selectedVersion + "_" + Date.now() + ".docx";
+    a.download = "Annual_Report_Template.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) { console.error("Download error:", err); }
+}
+
+let selectedPdfFile = null;
+
+function handleFileSelect() {
+  const input = document.getElementById("pdfFile");
+  const fileName = document.getElementById("fileName");
+  const btn = document.getElementById("processPdfBtn");
+  if (input.files && input.files[0]) {
+    selectedPdfFile = input.files[0];
+    if (fileName) {
+      fileName.style.display = "block";
+      fileName.innerText = "📄 " + selectedPdfFile.name + " (" + (selectedPdfFile.size / 1024 / 1024).toFixed(1) + " MB)";
+    }
+    if (btn) btn.disabled = false;
+  } else {
+    selectedPdfFile = null;
+    if (fileName) fileName.style.display = "none";
+    if (btn) btn.disabled = true;
+  }
+}
+
+function showPdfStatus(msg, type) {
+  const box = document.getElementById("pdfStatus");
+  if (!box) return;
+  box.style.display = "block";
+  box.className = type || "info";
+  box.innerText = msg;
+}
+
+async function processPDF() {
+  if (!selectedPdfFile) { showPdfStatus("Please select a PDF first", "error"); return; }
+  const fromPage = parseInt(document.getElementById("fromPage").value) || 1;
+  const toPage = parseInt(document.getElementById("toPage").value) || 50;
+  if (fromPage > toPage) { showPdfStatus("From page must be less than To page", "error"); return; }
+
+  const btn = document.getElementById("processPdfBtn");
+  btn.disabled = true;
+  btn.innerText = "⏳ Reading PDF...";
+
+  try {
+    showPdfStatus("Loading PDF...", "info");
+    const arrayBuffer = await selectedPdfFile.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    const endPage = Math.min(toPage, totalPages);
+
+    btn.innerText = "⏳ Extracting text...";
+    showPdfStatus("Extracting pages " + fromPage + " to " + endPage + "...", "info");
+
+    let allItems = [];
+    for (let i = fromPage; i <= endPage; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const viewport = page.getViewport({ scale: 1 });
+      const pageWidth = viewport.width;
+
+      const lines = {};
+      for (const item of content.items) {
+        const y = Math.round(item.transform[5]);
+        const x = item.transform[4];
+        const col = x < pageWidth / 2 ? "L" : "R";
+        const key = y + "_" + col;
+        if (!lines[key]) lines[key] = { text: "", fontSize: 0, x: x, y: y, col: col };
+        lines[key].text += item.str + " ";
+        lines[key].fontSize = Math.max(lines[key].fontSize, item.height);
+      }
+
+      const leftKeys = Object.keys(lines).filter(k => k.endsWith("_L")).sort((a, b) => lines[b].y - lines[a].y);
+      const rightKeys = Object.keys(lines).filter(k => k.endsWith("_R")).sort((a, b) => lines[b].y - lines[a].y);
+
+      for (const k of leftKeys) {
+        const line = lines[k];
+        if (line.text.trim().length > 1) allItems.push({ text: line.text.trim(), fontSize: line.fontSize, page: i });
+      }
+      for (const k of rightKeys) {
+        const line = lines[k];
+        if (line.text.trim().length > 1) allItems.push({ text: line.text.trim(), fontSize: line.fontSize, page: i });
+      }
+    }
+
+    btn.innerText = "⏳ Analyzing structure...";
+    showPdfStatus("Analyzing paragraphs and headings...", "info");
+
+    const paragraphs = extractParagraphs(allItems);
+
+    if (paragraphs.length === 0) {
+      showPdfStatus("No content found. Try a different page range.", "error");
+      btn.disabled = false;
+      btn.innerText = "🚀 Process & Fill Excel";
+      return;
+    }
+
+    btn.innerText = "⏳ Building Excel...";
+    showPdfStatus("Creating Excel with " + paragraphs.length + " paragraphs...", "info");
+
+    await buildExcelFromParagraphs(paragraphs);
+
+    showPdfStatus("✓ Done! " + paragraphs.length + " paragraphs extracted.", "success");
+    btn.disabled = false;
+    btn.innerText = "🚀 Process & Fill Excel";
+  } catch (err) {
+    console.error("PDF error:", err);
+    showPdfStatus("Error: " + err.message, "error");
+    btn.disabled = false;
+    btn.innerText = "🚀 Process & Fill Excel";
+  }
+}
+
+function classifyLine(text, fontSize, bodyFontSize) {
+  if (/^\d+\.\s+[A-Z][A-Z\s]+$/.test(text) && text.length < 150) return "heading_1";
+  if (/^\d+\.\s*$/.test(text)) return "heading_1";
+  if (/^\d+\.\s+[A-Z]/.test(text) && text.length < 150) return "heading_1";
+  if (/^\([a-z]\)\s+[A-Z]/.test(text) && text.length < 200) return "heading_2";
+  if (/^\([a-z]\)\s*$/.test(text)) return "heading_2";
+  if (/^\(i{1,4}v?\)\s+[A-Z]/.test(text) && text.length < 200) return "heading_3";
+  if (/^\(i{1,4}v?\)\s*$/.test(text)) return "heading_3";
+  if (text === text.toUpperCase() && text.length > 3 && text.length < 80) {
+    const letters = text.replace(/[^A-Z]/g, "");
+    if (letters.length > 3) return "heading_1";
+  }
+  if (fontSize > bodyFontSize * 1.3 && text.length < 150) return "heading_2";
+  if (text.startsWith("•") || text.startsWith("●") || /^[\-\*]\s/.test(text)) return "bullet";
+  return "body";
+}
+
+function extractParagraphs(items) {
+  if (items.length === 0) return [];
+  const sizeFreq = {};
+  for (const it of items) {
+    const r = Math.round(it.fontSize * 10) / 10;
+    sizeFreq[r] = (sizeFreq[r] || 0) + 1;
+  }
+  let bodyFontSize = 10;
+  let maxFreq = 0;
+  for (const s in sizeFreq) {
+    if (sizeFreq[s] > maxFreq) { maxFreq = sizeFreq[s]; bodyFontSize = parseFloat(s); }
+  }
+  const clean = [];
+  for (const it of items) {
+    const t = it.text.trim();
+    if (t.length < 2) continue;
+    if (/^\d+$/.test(t)) continue;
+    if (/^Page \d+/i.test(t)) continue;
+    if (t === "BLUE STAR LIMITED") continue;
+    if (/^\(CIN\s*:/.test(t)) continue;
+    if (t === "Financial Statements" || t === "Consolidated") continue;
+    if (t === "Notes to Consolidated Financial Statements") continue;
+    if (/^for the year ended/i.test(t)) continue;
+    clean.push(it);
+  }
+  const merged = [];
+  let prev = null;
+  for (let i = 0; i < clean.length; i++) {
+    const it = clean[i];
+    const text = it.text.trim();
+    const type = classifyLine(text, it.fontSize, bodyFontSize);
+    if (prev && prev.type.startsWith("heading_")) {
+      const isAllCaps = text === text.toUpperCase() && /[A-Z]/.test(text);
+      const isShort = text.length < 80;
+      const noNumbering = !/^\d+\./.test(text) && !/^\([a-z]\)/.test(text) && !/^\(i{1,4}v?\)/.test(text);
+      if (prev.text === prev.text.toUpperCase() && isAllCaps && isShort && noNumbering && prev.type === "heading_1") {
+        prev.text = prev.text + " " + text;
+        prev.fontSize = Math.max(prev.fontSize, it.fontSize);
+        continue;
+      }
+      if (prev.text && !/[.:;?!]$/.test(prev.text) && it.fontSize >= bodyFontSize * 1.2 && isShort && noNumbering) {
+        prev.text = prev.text + " " + text;
+        prev.fontSize = Math.max(prev.fontSize, it.fontSize);
+        continue;
+      }
+    }
+    const newItem = { text: text, type: type, fontSize: it.fontSize };
+    merged.push(newItem);
+    prev = newItem;
+  }
+  const paragraphs = [];
+  const stack = ["", "", "", "", ""];
+  let currentBody = "";
+  function flushP() {
+    if (currentBody.trim().length < 30) { currentBody = ""; return; }
+    paragraphs.push({
+      level1: stack[0] || "", level2: stack[1] || "", level3: stack[2] || "",
+      level4: stack[3] || "", level5: stack[4] || "",
+      level6: currentBody.trim().replace(/\s+/g, " ")
+    });
+    currentBody = "";
+  }
+  for (let i = 0; i < merged.length; i++) {
+    const it = merged[i];
+    if (it.type === "heading_1" || it.type === "heading_2") {
+      flushP();
+      const level = parseInt(it.type.split("_")[1]);
+      stack[level - 1] = it.text;
+      for (let l = level; l < 5; l++) stack[l] = "";
+      currentBody = "";
+    } else if (it.type === "heading_3") {
+      currentBody += " " + it.text;
+    } else if (it.type === "bullet") {
+      currentBody += " • " + it.text;
+    } else {
+      currentBody += " " + it.text;
+    }
+  }
+  flushP();
+  return paragraphs;
+}
+
+function cleanHeading(text) {
+  if (!text) return "";
+  let t = text.trim();
+  t = t.replace(/^\d+\.\s*/, "");
+  t = t.replace(/^\([a-z]\)\s*/i, "");
+  t = t.replace(/^\(i{1,4}v?x?\)\s*/i, "");
+  t = t.replace(/^[•●\-\*]\s*/, "");
+  return t.trim();
+}
+
+async function buildExcelFromParagraphs(paragraphs) {
+  const response = await fetch("../../assets/Excel_Template.xlsx");
+  if (!response.ok) throw new Error("Template file not found in assets folder");
+  const templateBuffer = await response.arrayBuffer();
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(templateBuffer);
+
+  let paraSheet = workbook.getWorksheet("Para_ID");
+  if (!paraSheet) {
+    for (const ws of workbook.worksheets) {
+      if (ws.name.toLowerCase().includes("para")) { paraSheet = ws; break; }
+    }
+  }
+  if (!paraSheet) throw new Error("Para_ID sheet not found");
+
+  const lastRow = paraSheet.actualRowCount;
+  for (let r = lastRow; r >= 2; r--) paraSheet.spliceRows(r, 1);
+
+  let rowNum = 2;
+  let paraCounter = 1;
+  for (const p of paragraphs) {
+    if (!p.level6 || p.level6.length < 30) continue;
+    const numCount = (p.level6.match(/\d/g) || []).length;
+    if (numCount / p.level6.length > 0.4) continue;
+    const paraId = "Para_" + String(paraCounter).padStart(2, "0");
+    paraCounter++;
+    const cL1 = cleanHeading(p.level1);
+    const cL2 = cleanHeading(p.level2);
+    const cL3 = cleanHeading(p.level3);
+    const cL4 = cleanHeading(p.level4);
+    const cL5 = cleanHeading(p.level5);
+
+    const row = paraSheet.getRow(rowNum);
+    row.getCell(1).value = paraId;
+    let cascade = cL1 || "";
+    row.getCell(2).value = cL1 || "";
+    if (cL2) cascade = cL2;
+    row.getCell(3).value = cL2 || cascade;
+    if (cL3) cascade = cL3;
+    row.getCell(4).value = cL3 || cascade;
+    if (cL4) cascade = cL4;
+    row.getCell(5).value = cL4 || cascade;
+    if (cL5) cascade = cL5;
+    row.getCell(6).value = cL5 || cascade;
+    row.getCell(7).value = p.level6;
+    row.getCell(8).value = "Y";
+    row.getCell(9).value = "Y";
+    row.getCell(10).value = "Y";
+    row.commit();
+    rowNum++;
+  }
+
+  const outBuffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([outBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Annual_Report_Filled_" + Date.now() + ".xlsx";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function generate() {
+  const btn = document.getElementById("genBtn");
+  btn.disabled = true;
+  btn.querySelector("span:last-child").innerText = "Generating...";
+
+  try {
+    let COMPANY_NAME = "Company Name";
+    let COMPANY_CIN = "";
+    let HEADER_RIGHT_TOP = "Financial Statements";
+    let HEADER_RIGHT_BOT = "Consolidated";
+    let DOC_TITLE = "Notes to Consolidated Financial Statements";
+    let DOC_SUBTITLE = "for the year ended March 31, 2025";
+    let YEAR = "";
+    let SCALE = "Crore";
+    let LOGO_URL = "";
+    let selectedVersion = "V1";
+    let versionDetail = "-";
+    let paragraphs = null, dynamics = null, tables = null;
+    let workbookName = "Workbook.xlsx";
+
+    await Excel.run(async (ctx) => {
+      const wb = ctx.workbook;
+      const allSheets = wb.worksheets;
+      allSheets.load("items/name");
+      await ctx.sync();
+      const names = allSheets.items.map(s => s.name);
+      console.log("Sheets:", names);
+
+      function findSheet(keywords) {
+        for (const k of keywords) {
+          const m = names.find(n => n.toLowerCase().includes(k.toLowerCase()));
+          if (m) return wb.worksheets.getItem(m);
+        }
+        return null;
+      }
+
+      const paraSheet = findSheet(["Para_ID", "Para"]);
+      const dynSheet = findSheet(["Dynamic Values", "Dynamic"]);
+      const tabSheet = findSheet(["Tables"]);
+      const landingSheet = findSheet(["Landing"]);
+      const vmSheet = findSheet(["Version"]);
+
+      const paraRange = paraSheet ? paraSheet.getUsedRange() : null;
+      const dynRange = dynSheet ? dynSheet.getUsedRange() : null;
+      const tabRange = tabSheet ? tabSheet.getUsedRange() : null;
+      const vmRange = vmSheet ? vmSheet.getUsedRange() : null;
+      const verCell = landingSheet ? landingSheet.getRange("C2") : null;
+
+      wb.load("name");
+      if (paraRange) paraRange.load("values");
+      if (dynRange) dynRange.load("values");
+      if (tabRange) tabRange.load("values");
+      if (vmRange) vmRange.load("values");
+      if (verCell) verCell.load("values");
+      await ctx.sync();
+
+      workbookName = wb.name || "Workbook.xlsx";
+      paragraphs = paraRange ? paraRange.values : null;
+      dynamics = dynRange ? dynRange.values : null;
+      tables = tabRange ? tabRange.values : null;
+      if (verCell) selectedVersion = String(verCell.values[0][0] || "V1").trim().toUpperCase();
+
+      if (vmRange) {
+        const vmRows = vmRange.values;
+        for (let i = 1; i < vmRows.length; i++) {
+          if (vmRows[i] && String(vmRows[i][0] || "").trim().toUpperCase() === selectedVersion) {
+            const r = vmRows[i];
+            versionDetail = String(r[1] || "-").trim();
+            YEAR = String(r[2] || "").trim();
+            LOGO_URL = String(r[5] || "").trim();
+            SCALE = String(r[6] || "Crore").trim();
+            COMPANY_NAME = String(r[7] || COMPANY_NAME).trim();
+            COMPANY_CIN = String(r[8] || "").trim();
+            HEADER_RIGHT_TOP = String(r[9] || HEADER_RIGHT_TOP).trim();
+            HEADER_RIGHT_BOT = String(r[10] || HEADER_RIGHT_BOT).trim();
+            DOC_TITLE = String(r[11] || DOC_TITLE).trim();
+            DOC_SUBTITLE = String(r[12] || DOC_SUBTITLE).trim();
+            break;
+          }
+        }
+      }
+    });
+
+    console.log("Version:", selectedVersion);
+    console.log("Scale:", SCALE);
+
+    let logoBase64 = null;
+    let logoSource = "Not available";
+    if (LOGO_URL && (LOGO_URL.startsWith("http://") || LOGO_URL.startsWith("https://"))) {
+      logoBase64 = await fetchImage(LOGO_URL);
+      if (logoBase64) logoSource = "URL from Version Maintenance";
+    }
+
+    const B = { COMPANY_NAME, COMPANY_CIN, HEADER_RIGHT_TOP, HEADER_RIGHT_BOT, DOC_TITLE, DOC_SUBTITLE };
+    const dynMap = buildDynMap(dynamics, SCALE);
+    const tableMap = buildTableMap(tables);
+    console.log("Dynamic Map:", dynMap);
+    const userName = (Office.context && Office.context.displayName) || "User";
+
+    // Track missing DVs across the whole document
+    const missingDVs = new Set();
+
+    const meta = {
+      version: selectedVersion, versionDetail, generatedBy: userName,
+      generatedOn: new Date(), workbookName, logoBase64, logoSource,
+      year: YEAR, scale: SCALE, missingDVs: missingDVs
+    };
+
+    const blob = await buildDoc(paragraphs, dynMap, tableMap, B, selectedVersion, meta);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Annual_Report_" + selectedVersion + "_" + Date.now() + ".docx";
     a.click();
     URL.revokeObjectURL(url);
 
-    const msg = missingTracker.items.length > 0
-      ? "\u2713 " + data.selectedVersion + " downloaded \u2014 \u26A0 " + missingTracker.items.length + " missing tag(s)"
-      : "\u2713 " + data.selectedVersion + " Word file downloaded!";
-    showStatus(msg, missingTracker.items.length > 0 ? "blue" : "green");
-  } catch (error) {
-    console.error("Error:", error);
-    showStatus("Error: " + error.message, "red");
+    btn.disabled = false;
+    btn.querySelector("span:last-child").innerText = "Generate Word Document";
+    console.log("Missing DVs:", Array.from(missingDVs));
+  } catch (err) {
+    console.error("Generate error:", err);
+    btn.disabled = false;
+    btn.querySelector("span:last-child").innerText = "Generate Word Document";
   }
 }
 
-function lookupLogoUrl(vmRows, version) {
-  if (!vmRows || vmRows.length === 0) return null;
-  const header = vmRows[0] || [];
-  let colLogo = -1;
-  for (let i = 0; i < header.length; i++) {
-    const h = String(header[i] || "").toLowerCase();
-    if (h.indexOf("logo") >= 0 || h.indexOf("url") >= 0 || h.indexOf("image") >= 0) { colLogo = i; break; }
-  }
-  if (colLogo < 0 && header.length > 5) colLogo = 5;
-  if (colLogo < 0) return null;
-  for (let i = 1; i < vmRows.length; i++) {
-    const row = vmRows[i];
-    if (!row) continue;
-    if (String(row[0] || "").trim().toUpperCase() === version) {
-      const url = String(row[colLogo] || "").trim();
-      if (url && (url.startsWith("http://") || url.startsWith("https://"))) return url;
-    }
-  }
-  return null;
-}
-
-function lookupScale(vmRows, version) {
-  const fallback = { label: "", divisor: 1 };
-  if (!vmRows || vmRows.length === 0) return fallback;
-  const header = vmRows[0] || [];
-  let colScale = -1;
-  for (let i = 0; i < header.length; i++) {
-    const h = String(header[i] || "").toLowerCase().trim();
-    if (h === "scale" || h.indexOf("scale") >= 0) { colScale = i; break; }
-  }
-  if (colScale < 0) return fallback;
-  for (let i = 1; i < vmRows.length; i++) {
-    const row = vmRows[i];
-    if (!row) continue;
-    if (String(row[0] || "").trim().toUpperCase() === version) {
-      const scaleRaw = String(row[colScale] || "").trim();
-      const scaleKey = scaleRaw.toUpperCase();
-      const divisor = SCALE_MAP[scaleKey] !== undefined ? SCALE_MAP[scaleKey] : 1;
-      return { label: scaleRaw, divisor: divisor };
-    }
-  }
-  return fallback;
-}
-
-function normalizeGithubUrl(url) {
-  if (!url) return url;
-  let u = String(url).trim();
-  u = u.replace(/[\?&]raw=true/gi, "");
-  if (u.indexOf("github.com/") >= 0 && u.indexOf("/blob/") >= 0) {
-    u = u.replace("github.com/", "raw.githubusercontent.com/");
-    u = u.replace("/blob/", "/");
-  }
-  return u;
-}
-
-async function fetchImageAsBase64(url) {
+async function fetchImage(url) {
   try {
-    const cleanUrl = normalizeGithubUrl(url);
-    const response = await fetch(cleanUrl);
-    if (!response.ok) return null;
-    const blob = await response.blob();
-    return await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        const idx = result.indexOf(",");
-        resolve(idx >= 0 ? result.substring(idx + 1) : result);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const blob = await r.blob();
+    return await new Promise((res, rej) => {
+      const rd = new FileReader();
+      rd.onloadend = () => { const x = rd.result; const i = x.indexOf(","); res(i >= 0 ? x.substring(i + 1) : x); };
+      rd.onerror = rej;
+      rd.readAsDataURL(blob);
     });
   } catch (e) { return null; }
 }
 
-function getImageDimensions(base64) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
-    img.onerror = () => resolve({ w: 0, h: 0 });
-    img.src = "data:image/png;base64," + base64;
-  });
-}
-
-function lookupVersionDetail(vmRows, version) {
-  if (!vmRows || vmRows.length === 0) return "-";
-  for (let i = 0; i < vmRows.length; i++) {
-    const row = vmRows[i];
-    if (!row || row.length === 0) continue;
-    if (String(row[0] || "").trim().toUpperCase() === version) {
-      return String(row[1] || "-").trim();
-    }
-  }
-  return "-";
-}
-
-function makeNumberFormatter() {
-  const counters = [0, 0, 0, 0, 0];
-  const seenNumbers = {};
-  function toLetter(n) {
-    let result = "", num = n;
-    while (num > 0) {
-      const rem = (num - 1) % 26;
-      result = String.fromCharCode(97 + rem) + result;
-      num = Math.floor((num - 1) / 26);
-    }
-    return result;
-  }
-  function toRoman(n) {
-    const map = ["", "i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii","xiii","xiv","xv","xvi","xvii","xviii","xix","xx"];
-    if (n <= 20) return map[n];
-    const romans = [[1000,"m"],[900,"cm"],[500,"d"],[400,"cd"],[100,"c"],[90,"xc"],[50,"l"],[40,"xl"],[10,"x"],[9,"ix"],[5,"v"],[4,"iv"],[1,"i"]];
-    let result = ""; let num = n;
-    for (const [val, sym] of romans) { while (num >= val) { result += sym; num -= val; } }
-    return result;
-  }
-  function assign(text, level) {
-    const lvlIdx = level - 1;
-    const parentContext = counters.slice(0, lvlIdx).join(".");
-    const contextKey = parentContext + "|" + text;
-    if (seenNumbers[contextKey]) return { number: seenNumbers[contextKey], isNew: false };
-    counters[lvlIdx]++;
-    for (let l = lvlIdx + 1; l < 5; l++) counters[l] = 0;
-    let number = "";
-    if (level === 1) number = counters[0] + ".";
-    else if (level === 2) number = counters[0] + "." + counters[1];
-    else if (level === 3) number = counters[0] + "." + counters[1] + "." + counters[2];
-    else if (level === 4) number = "(" + toLetter(counters[3]) + ")";
-    else if (level === 5) number = "(" + toRoman(counters[4]) + ")";
-    seenNumbers[contextKey] = number;
-    return { number: number, isNew: true };
-  }
-  return { assign: assign };
-}
-
-async function buildWordDoc(paraRows, dynMap, tableMap, B, version, metadata, missingTracker) {
-  const d = docx;
-  const usedTables = {};
-  const globalPrintedHeadings = {};
-  let tablesIncluded = 0;
-
-  const pageHeader = makePageHeader(d, B, metadata.logoBase64, metadata.logoDims);
-
-  const titleChildren = [
-    new d.Paragraph({
-      children: [new d.TextRun({ text: B.DOC_TITLE, bold: true, color: BRAND_BLUE, font: "Arial", size: 52 })],
-      spacing: { before: 240, after: 80 }
-    }),
-    new d.Paragraph({
-      children: [new d.TextRun({ text: B.DOC_SUBTITLE, color: TEXT_GREY, font: "Arial", size: 22 })],
-      spacing: { after: 360 }
-    })
-  ];
-
-  const headerRow = paraRows[0] || [];
-  const colPara = findColIdx(headerRow, "Para");
-  const colL6 = findColIdx(headerRow, "Level 6");
-  const colLvl = [
-    findColIdx(headerRow, "Level 1"),
-    findColIdx(headerRow, "Level 2"),
-    findColIdx(headerRow, "Level 3"),
-    findColIdx(headerRow, "Level 4"),
-    findColIdx(headerRow, "Level 5")
-  ];
-  const colVersion = findExactColIdx(headerRow, version);
-
-  const sections = [];
-  sections.push({
-    properties: {
-      page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1080, bottom: 1080, left: 1080 } },
-      type: d.SectionType.CONTINUOUS
-    },
-    headers: { default: pageHeader },
-    children: titleChildren
-  });
-
-  let currentChildren = [];
-  function flush2Col() {
-    if (currentChildren.length === 0) return;
-    sections.push({
-      properties: {
-        page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1080, bottom: 1080, left: 1080 } },
-        column: { count: 2, space: 432 },
-        type: d.SectionType.CONTINUOUS
-      },
-      headers: { default: pageHeader },
-      children: currentChildren
-    });
-    currentChildren = [];
-  }
-
-  let printedCount = 0, skippedCount = 0;
-  const numberer = makeNumberFormatter();
-  const stickyLevels = ["", "", "", "", ""];
-
-  for (let i = 1; i < paraRows.length; i++) {
-    const row = paraRows[i];
-    let isCompletelyEmpty = true;
-    for (let c = 0; c < headerRow.length; c++) {
-      if (String(row[c] || "").trim() !== "") { isCompletelyEmpty = false; break; }
-    }
-    if (isCompletelyEmpty) continue;
-
-    if (colVersion >= 0) {
-      const flag = String(row[colVersion] || "").trim().toUpperCase();
-      if (flag !== "Y") { skippedCount++; continue; }
-    }
-    printedCount++;
-
-    const paraId = normalizeId(String(row[colPara] || ""));
-
-    const rawTexts = [];
-    for (let lvl = 1; lvl <= 5; lvl++) {
-      const colIdx = colLvl[lvl - 1];
-      if (colIdx < 0) { rawTexts.push(""); continue; }
-      rawTexts.push(cleanStr(String(row[colIdx] || "")));
-    }
-
-    let highestFilledIdx = -1;
-    for (let lvl = 0; lvl < 5; lvl++) {
-      if (rawTexts[lvl]) { highestFilledIdx = lvl; break; }
-    }
-
-    const effectiveTexts = [];
-    if (highestFilledIdx === -1) {
-      for (let lvl = 0; lvl < 5; lvl++) effectiveTexts.push("");
-    } else {
-      for (let lvl = 0; lvl < highestFilledIdx; lvl++) effectiveTexts.push(stickyLevels[lvl]);
-      effectiveTexts.push(rawTexts[highestFilledIdx]);
-      stickyLevels[highestFilledIdx] = rawTexts[highestFilledIdx];
-      for (let lvl = highestFilledIdx + 1; lvl < 5; lvl++) stickyLevels[lvl] = "";
-      for (let lvl = highestFilledIdx + 1; lvl < 5; lvl++) {
-        if (rawTexts[lvl]) { effectiveTexts.push(rawTexts[lvl]); stickyLevels[lvl] = rawTexts[lvl]; }
-        else effectiveTexts.push("");
-      }
-    }
-
-    const seenInRow = {};
-    const finalLevelTexts = [];
-    for (let lvl = 0; lvl < 5; lvl++) {
-      const t = effectiveTexts[lvl];
-      if (!t) { finalLevelTexts.push(null); continue; }
-      if (seenInRow[t]) finalLevelTexts.push(null);
-      else { seenInRow[t] = true; finalLevelTexts.push(t); }
-    }
-
-    for (let lvl = 1; lvl <= 5; lvl++) {
-      const hText = finalLevelTexts[lvl - 1];
-      if (!hText) continue;
-      if (globalPrintedHeadings[hText]) continue;
-      globalPrintedHeadings[hText] = true;
-      const result = numberer.assign(hText, lvl);
-      const numberedText = result.number + " " + hText;
-      currentChildren.push(makeHeading(d, numberedText, lvl));
-    }
-
-    if (colL6 >= 0) {
-      let body = cleanStr(String(row[colL6] || ""));
-      if (body) {
-        body = replaceDynamics(body, dynMap, paraId, missingTracker);
-        currentChildren.push(makeBody(d, body));
-      }
-    }
-
-    if (tableMap[paraId]) {
-      const tblKey = tableMap[paraId].key;
-      if (!usedTables[tblKey]) {
-        usedTables[tblKey] = true;
-        tablesIncluded++;
-        flush2Col();
-        const tblSectionChildren = [];
-        tblSectionChildren.push(makeWordTable(d, tableMap[paraId]));
-        tblSectionChildren.push(new d.Paragraph({ children: [new d.TextRun({ text: "" })], spacing: { after: 200 } }));
-        sections.push({
-          properties: {
-            page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1080, bottom: 1080, left: 1080 } },
-            type: d.SectionType.CONTINUOUS
-          },
-          headers: { default: pageHeader },
-          children: tblSectionChildren
-        });
-      }
-    }
-  }
-
-  flush2Col();
-
-  const appendixChildren = buildAppendix(d, B, metadata, printedCount, skippedCount, tablesIncluded, missingTracker);
-  sections.push({
-    properties: {
-      page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1080, bottom: 1080, left: 1080 } },
-      type: d.SectionType.NEXT_PAGE
-    },
-    headers: { default: pageHeader },
-    children: appendixChildren
-  });
-
-  const doc = new d.Document({
-    styles: { default: { document: { run: { font: "Arial", size: 20 } } } },
-    sections: sections
-  });
-  return await d.Packer.toBlob(doc);
-}
-
-function buildAppendix(d, B, m, printedCount, skippedCount, tablesIncluded, missingTracker) {
-  const children = [];
-  children.push(new d.Paragraph({
-    children: [new d.TextRun({ text: "APPENDIX", bold: true, color: BRAND_BLUE, font: "Arial", size: 48 })],
-    spacing: { before: 240, after: 80 }
-  }));
-  children.push(new d.Paragraph({
-    children: [new d.TextRun({ text: "Document Generation Information", color: TEXT_GREY, font: "Arial", size: 22, italics: true })],
-    spacing: { after: 320 }
-  }));
-  children.push(makeTableTitleBar(d, "Generation Details"));
-  const dateStr = formatDateTime(m.generatedOn);
-  const gen = [
-    ["Document Title", B.DOC_TITLE], ["Subtitle", B.DOC_SUBTITLE],
-    ["Company", B.COMPANY_NAME], ["CIN", B.COMPANY_CIN],
-    ["Version Used", m.version], ["Version Detail", m.versionDetail],
-    ["Scale Applied", m.scaleLabel || "None"],
-    ["Generated By", m.generatedBy], ["Generated On", dateStr],
-    ["Source File", m.workbookName], ["Logo Source", m.logoBase64 ? "Loaded from URL" : "Not available"]
-  ];
-  children.push(buildKeyValueTable(d, gen));
-  children.push(new d.Paragraph({ children: [new d.TextRun({ text: "", size: 12 })], spacing: { before: 200 } }));
-  children.push(makeTableTitleBar(d, "Content Statistics"));
-  const missingCount = missingTracker ? missingTracker.items.length : 0;
-  const stats = [
-    ["Paragraphs Included", String(printedCount)],
-    ["Paragraphs Skipped", String(skippedCount)],
-    ["Tables Included", String(tablesIncluded)],
-    ["Total Rows in Para_ID", String(printedCount + skippedCount)],
-    ["Missing Dynamic Values", String(missingCount) + (missingCount > 0 ? " \u26A0" : "")]
-  ];
-  children.push(buildKeyValueTable(d, stats));
-
-  if (missingCount > 0) {
-    children.push(new d.Paragraph({ children: [new d.TextRun({ text: "", size: 12 })], spacing: { before: 240 } }));
-    children.push(makeTableTitleBar(d, "Missing Dynamic Values \u2014 Review Required"));
-    children.push(new d.Paragraph({
-      children: [new d.TextRun({
-        text: "The following dynamic value tags were referenced in paragraphs but not found in the Dynamic Values sheet. Please verify these values before finalising the document.",
-        color: TEXT_GREY, italics: true, font: "Arial", size: 18
-      })],
-      spacing: { before: 100, after: 200 }
-    }));
-    children.push(buildMissingTagsTable(d, missingTracker.items));
-  }
-
-  children.push(new d.Paragraph({ children: [new d.TextRun({ text: "", size: 20 })], spacing: { before: 400 } }));
-  children.push(new d.Paragraph({
-    alignment: d.AlignmentType.CENTER,
-    children: [new d.TextRun({ text: "Generated by Annual Report Auto-Generator  \u2022  iOCFO Consulting", color: TEXT_GREY, font: "Arial", size: 18, italics: true })]
-  }));
-  children.push(new d.Paragraph({
-    alignment: d.AlignmentType.CENTER,
-    children: [new d.TextRun({ text: dateStr, color: TEXT_GREY, font: "Arial", size: 16 })],
-    spacing: { after: 200 }
-  }));
-  return children;
-}
-
-function buildMissingTagsTable(d, items) {
-  const border = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
-  const borders = { top: border, bottom: border, left: border, right: border };
-  const totalWidth = 9360;
-  const agg = {};
-  for (const it of items) {
-    if (!agg[it.tag]) agg[it.tag] = [];
-    if (agg[it.tag].indexOf(it.paraId) === -1) agg[it.tag].push(it.paraId);
-  }
-  const rows = [];
-  rows.push(new d.TableRow({
-    cantSplit: true, tableHeader: true,
-    children: [
-      new d.TableCell({
-        width: { size: 3000, type: d.WidthType.DXA }, borders: borders,
-        shading: { type: d.ShadingType.CLEAR, fill: TABLE_HEADER_BG },
-        margins: { top: 80, bottom: 80, left: 120, right: 100 },
-        children: [new d.Paragraph({ children: [new d.TextRun({ text: "Dynamic Tag", bold: true, color: "FFFFFF", font: "Arial", size: 18 })] })]
-      }),
-      new d.TableCell({
-        width: { size: 6360, type: d.WidthType.DXA }, borders: borders,
-        shading: { type: d.ShadingType.CLEAR, fill: TABLE_HEADER_BG },
-        margins: { top: 80, bottom: 80, left: 120, right: 100 },
-        children: [new d.Paragraph({ children: [new d.TextRun({ text: "Used in Paragraph(s)", bold: true, color: "FFFFFF", font: "Arial", size: 18 })] })]
-      })
-    ]
-  }));
-  const tagKeys = Object.keys(agg).sort();
-  for (let i = 0; i < tagKeys.length; i++) {
-    const tag = tagKeys[i];
-    const bg = i % 2 === 1 ? MISSING_BG : "FFFFFF";
-    rows.push(new d.TableRow({
-      cantSplit: true,
-      children: [
-        new d.TableCell({
-          width: { size: 3000, type: d.WidthType.DXA }, borders: borders,
-          shading: { type: d.ShadingType.CLEAR, fill: bg },
-          margins: { top: 80, bottom: 80, left: 120, right: 100 },
-          children: [new d.Paragraph({ children: [new d.TextRun({ text: tag, bold: true, color: MISSING_RED, font: "Arial", size: 18 })] })]
-        }),
-        new d.TableCell({
-          width: { size: 6360, type: d.WidthType.DXA }, borders: borders,
-          shading: { type: d.ShadingType.CLEAR, fill: bg },
-          margins: { top: 80, bottom: 80, left: 120, right: 100 },
-          children: [new d.Paragraph({ children: [new d.TextRun({ text: agg[tag].join(", "), color: TEXT_DARK, font: "Arial", size: 18 })] })]
-        })
-      ]
-    }));
-  }
-  return new d.Table({
-    width: { size: totalWidth, type: d.WidthType.DXA },
-    columnWidths: [3000, 6360], rows: rows, layout: d.TableLayoutType.FIXED
-  });
-}
-
-function buildKeyValueTable(d, rows) {
-  const border = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
-  const borders = { top: border, bottom: border, left: border, right: border };
-  const tableRows = rows.map((kv, idx) => {
-    const bg = idx % 2 === 1 ? "F4F7FC" : "FFFFFF";
-    return new d.TableRow({
-      cantSplit: true,
-      children: [
-        new d.TableCell({
-          width: { size: 3400, type: d.WidthType.DXA }, borders: borders,
-          shading: { type: d.ShadingType.CLEAR, fill: bg },
-          margins: { top: 100, bottom: 100, left: 140, right: 100 },
-          children: [new d.Paragraph({ children: [new d.TextRun({ text: kv[0], bold: true, color: DARK_BLUE, font: "Arial", size: 18 })] })]
-        }),
-        new d.TableCell({
-          width: { size: 5960, type: d.WidthType.DXA }, borders: borders,
-          shading: { type: d.ShadingType.CLEAR, fill: bg },
-          margins: { top: 100, bottom: 100, left: 140, right: 100 },
-          children: [new d.Paragraph({ children: [new d.TextRun({ text: kv[1], color: TEXT_DARK, font: "Arial", size: 18 })] })]
-        })
-      ]
-    });
-  });
-  return new d.Table({ 
-    width: { size: 9360, type: d.WidthType.DXA }, columnWidths: [3400, 5960], 
-    rows: tableRows, layout: d.TableLayoutType.FIXED
-  });
-}
-
-function formatDateTime(d) {
-  const date = d || new Date();
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const day = String(date.getDate()).padStart(2, "0");
-  let hours = date.getHours();
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12; if (hours === 0) hours = 12;
-  return day + " " + months[date.getMonth()] + " " + date.getFullYear() + ", " + hours + ":" + minutes + " " + ampm;
-}
-
-function base64ToUint8Array(base64) {
-  try {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes;
-  } catch (e) { return null; }
-}
-
-function makePageHeader(d, B, logoBase64, logoDims) {
-  let rightCellChildren;
-  if (logoBase64) {
-    try {
-      const bytes = base64ToUint8Array(logoBase64);
-      if (bytes && bytes.length > 0) {
-        const MAX_W = 150, MAX_H = 55;
-        let imgW = MAX_W, imgH = MAX_H;
-        if (logoDims && logoDims.w > 0 && logoDims.h > 0) {
-          const ratio = logoDims.w / logoDims.h;
-          imgH = MAX_H;
-          imgW = Math.round(MAX_H * ratio);
-          if (imgW > MAX_W) { imgW = MAX_W; imgH = Math.round(MAX_W / ratio); }
-        }
-        rightCellChildren = [
-          new d.Paragraph({
-            alignment: d.AlignmentType.RIGHT, spacing: { after: 100 },
-            children: [new d.ImageRun({ data: bytes, transformation: { width: imgW, height: imgH } })]
-          }),
-          new d.Paragraph({
-            alignment: d.AlignmentType.RIGHT, spacing: { after: 20 },
-            children: [new d.TextRun({ text: B.HEADER_RIGHT_TOP, bold: true, color: BRAND_BLUE, font: "Arial", size: 18 })]
-          }),
-          new d.Paragraph({
-            alignment: d.AlignmentType.RIGHT,
-            children: [new d.TextRun({ text: B.HEADER_RIGHT_BOT, color: TEXT_GREY, font: "Arial", size: 15 })]
-          })
-        ];
-      } else throw new Error("Empty bytes");
-    } catch (e) {
-      rightCellChildren = [
-        new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_TOP, bold: true, color: BRAND_BLUE, font: "Arial", size: 20 })] }),
-        new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_BOT, color: TEXT_GREY, font: "Arial", size: 16 })] })
-      ];
-    }
-  } else {
-    rightCellChildren = [
-      new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_TOP, bold: true, color: BRAND_BLUE, font: "Arial", size: 20 })] }),
-      new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_BOT, color: TEXT_GREY, font: "Arial", size: 16 })] })
-    ];
-  }
-
-  return new d.Header({
-    children: [new d.Table({
-      width: { size: 9360, type: d.WidthType.DXA }, columnWidths: [4680, 4680],
-      borders: {
-        top: { style: d.BorderStyle.NONE },
-        bottom: { style: d.BorderStyle.SINGLE, size: 6, color: BORDER_LIGHT },
-        left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE },
-        insideHorizontal: { style: d.BorderStyle.NONE }, insideVertical: { style: d.BorderStyle.NONE }
-      },
-      rows: [new d.TableRow({
-        children: [
-          new d.TableCell({
-            width: { size: 4680, type: d.WidthType.DXA }, borders: noBorders(d),
-            verticalAlign: d.VerticalAlign.CENTER, margins: { top: 80, bottom: 80, left: 0, right: 0 },
-            children: [
-              new d.Paragraph({ children: [new d.TextRun({ text: B.COMPANY_NAME, bold: true, color: BRAND_BLUE, font: "Arial", size: 22 })] }),
-              new d.Paragraph({ children: [new d.TextRun({ text: B.COMPANY_CIN, color: TEXT_GREY, font: "Arial", size: 16 })] })
-            ]
-          }),
-          new d.TableCell({
-            width: { size: 4680, type: d.WidthType.DXA }, borders: noBorders(d),
-            verticalAlign: d.VerticalAlign.CENTER, margins: { top: 80, bottom: 80, left: 0, right: 0 },
-            children: rightCellChildren
-          })
-        ]
-      })]
-    })]
-  });
-}
-
-function noBorders(d) {
-  return { top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.NONE }, left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE } };
-}
-
-function makeHeading(d, text, level) {
-  let size, bold, italics, color, indentLeft;
-  switch (level) {
-    case 1: size = 26; bold = true; italics = false; color = BRAND_BLUE; indentLeft = 0; break;
-    case 2: size = 22; bold = true; italics = false; color = TEXT_DARK; indentLeft = 0; break;
-    case 3: size = 21; bold = true; italics = true; color = TEXT_DARK; indentLeft = 100; break;
-    case 4: size = 20; bold = true; italics = true; color = "404040"; indentLeft = 200; break;
-    default: size = 20; bold = true; italics = true; color = "555555"; indentLeft = 300;
-  }
-  return new d.Paragraph({
-    children: [new d.TextRun({ text: text, bold: bold, italics: italics, color: color, font: "Arial", size: size })],
-    spacing: { before: level === 1 ? 280 : 200, after: level === 1 ? 140 : 100 },
-    indent: { left: indentLeft }, keepNext: true
-  });
-}
-
-function makeBody(d, text) {
-  const runs = parseTextToRuns(d, text);
-  return new d.Paragraph({
-    alignment: d.AlignmentType.JUSTIFIED,
-    children: runs,
-    spacing: { after: 120 }
-  });
-}
-
-function parseTextToRuns(d, text) {
-  const runs = [];
-  let cursor = 0;
-  const re = new RegExp(MISS_OPEN + "(.*?)" + MISS_CLOSE, "g");
-  let match;
-  while ((match = re.exec(text)) !== null) {
-    if (match.index > cursor) {
-      runs.push(new d.TextRun({
-        text: text.substring(cursor, match.index),
-        color: TEXT_DARK, font: "Arial", size: 20
-      }));
-    }
-    runs.push(new d.TextRun({
-      text: match[1],
-      bold: true, color: MISSING_RED, font: "Arial", size: 20,
-      highlight: "yellow"
-    }));
-    cursor = match.index + match[0].length;
-  }
-  if (cursor < text.length) {
-    runs.push(new d.TextRun({
-      text: text.substring(cursor),
-      color: TEXT_DARK, font: "Arial", size: 20
-    }));
-  }
-  if (runs.length === 0) {
-    runs.push(new d.TextRun({ text: text, color: TEXT_DARK, font: "Arial", size: 20 }));
-  }
-  return runs;
-}
-
-function makeTableTitleBar(d, title) {
-  const totalWidth = 9360;
-  return new d.Table({
-    width: { size: totalWidth, type: d.WidthType.DXA },
-    columnWidths: [totalWidth], layout: d.TableLayoutType.FIXED,
-    borders: {
-      top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.NONE },
-      left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE },
-      insideHorizontal: { style: d.BorderStyle.NONE }, insideVertical: { style: d.BorderStyle.NONE }
-    },
-    rows: [new d.TableRow({
-      cantSplit: true,
-      children: [new d.TableCell({
-        width: { size: totalWidth, type: d.WidthType.DXA },
-        shading: { type: d.ShadingType.CLEAR, fill: TABLE_HEADER_BG },
-        margins: { top: 80, bottom: 80, left: 140, right: 100 },
-        children: [new d.Paragraph({
-          children: [new d.TextRun({ text: title, bold: true, color: "FFFFFF", font: "Arial", size: 20 })],
-          keepNext: true
-        })]
-      })]
-    })]
-  });
-}
-
-// === UPDATED: Header rows keep with next + repeat across pages ===
-function makeWordTable(d, info) {
-  const numRows = info.endRow - info.headerRow + 1;
-  const numCols = info.numCols;
-  if (numRows < 1 || numCols < 1) return new d.Paragraph({ children: [new d.TextRun({ text: "" })] });
-  
-  const totalWidth = 9360;
-  
-  const colMaxLen = new Array(numCols).fill(1);
-  for (let r = 0; r < numRows; r++) {
-    const rowData = info.allRows[info.headerRow + r] || [];
-    for (let c = 0; c < numCols; c++) {
-      const len = String(rowData[c] || "").length;
-      if (len > colMaxLen[c]) colMaxLen[c] = len;
-    }
-  }
-  const weights = colMaxLen.map((len, i) => Math.max(len, 5) * (i === 0 ? 1.3 : 1.0));
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
-  
-  const MIN_W = 700;
-  let columnWidths = weights.map(w => Math.max(MIN_W, Math.floor((w / totalWeight) * totalWidth)));
-  let sum = columnWidths.reduce((a, b) => a + b, 0);
-  if (sum > totalWidth) {
-    const scale = totalWidth / sum;
-    columnWidths = columnWidths.map(w => Math.floor(w * scale));
-    sum = columnWidths.reduce((a, b) => a + b, 0);
-  }
-  columnWidths[0] += (totalWidth - sum);
-
-  const border = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
-  const borders = { top: border, bottom: border, left: border, right: border };
-  const rows = [];
-  for (let r = 0; r < numRows; r++) {
-    const sheetRow = info.headerRow + r;
-    const rowData = info.allRows[sheetRow] || [];
-    const isHeader = (r === 0);
-    const firstCol = String(rowData[0] || "").trim();
-    let isHighlight = false, isSubHeader = false;
-    if (!isHeader) {
-      const fc = firstCol.toLowerCase();
-      if (fc.startsWith("as at") || fc.startsWith("at march") || fc.startsWith("balance as") || fc.startsWith("total")) isHighlight = true;
-      let empty = 0;
-      for (let c = 1; c < numCols; c++) if (!rowData[c] || String(rowData[c]).trim() === "") empty++;
-      if (empty === numCols - 1 && firstCol) isSubHeader = true;
-    }
-    const cells = [];
-    for (let c = 0; c < numCols; c++) {
-      const cellText = String(rowData[c] !== undefined && rowData[c] !== null ? rowData[c] : "").trim();
-      let bg = "FFFFFF", txtCol = TEXT_DARK, fSize = 16, isB = false, isI = false;
-      let align = (c === 0) ? d.AlignmentType.LEFT : d.AlignmentType.RIGHT;
-      if (isHeader) { bg = TABLE_HEADER_BG; txtCol = "FFFFFF"; isB = true; align = d.AlignmentType.CENTER; }
-      else if (isSubHeader) { bg = LIGHT_BLUE; txtCol = DARK_BLUE; isB = true; isI = true; align = d.AlignmentType.LEFT; }
-      else if (isHighlight) { bg = LIGHT_BLUE; txtCol = DARK_BLUE; isB = true; }
-      cells.push(new d.TableCell({
-        width: { size: columnWidths[c], type: d.WidthType.DXA },
-        borders: borders, shading: { type: d.ShadingType.CLEAR, fill: bg },
-        margins: { top: 80, bottom: 80, left: 100, right: 100 },
-        children: [new d.Paragraph({
-          alignment: align,
-          keepNext: isHeader,
-          keepLines: true,
-          children: [new d.TextRun({ text: cellText, bold: isB, italics: isI, color: txtCol, font: "Arial", size: fSize })]
-        })]
-      }));
-    }
-    rows.push(new d.TableRow({ 
-      children: cells, 
-      cantSplit: true,
-      tableHeader: isHeader  // Header repeats on next page if table splits
-    }));
-  }
-  return new d.Table({ 
-    width: { size: totalWidth, type: d.WidthType.DXA }, columnWidths: columnWidths, 
-    rows: rows, layout: d.TableLayoutType.FIXED
-  });
-}
-
-function findColIdx(headerRow, keyword) {
-  for (let i = 0; i < headerRow.length; i++) {
-    if (String(headerRow[i] || "").toLowerCase().indexOf(keyword.toLowerCase()) >= 0) return i;
+function findColIdx(h, k) {
+  for (let i = 0; i < h.length; i++) {
+    if (String(h[i] || "").toLowerCase().indexOf(k.toLowerCase()) >= 0) return i;
   }
   return -1;
 }
 
-function findExactColIdx(headerRow, exactName) {
-  const target = String(exactName).trim().toUpperCase();
-  for (let i = 0; i < headerRow.length; i++) {
-    if (String(headerRow[i] || "").trim().toUpperCase() === target) return i;
+function findExactCol(h, n) {
+  const t = String(n).trim().toUpperCase();
+  for (let i = 0; i < h.length; i++) {
+    if (String(h[i] || "").trim().toUpperCase() === t) return i;
   }
   return -1;
 }
@@ -867,173 +471,448 @@ function cleanStr(s) {
 function normalizeId(s) {
   const m = /Para[_\s]*0*(\d+)/i.exec(String(s || ""));
   if (!m) return String(s || "").trim();
-  return "Para_" + String(m[1]).padStart(3, "0");
+  return "Para_" + String(m[1]).padStart(2, "0");
 }
 
-function formatIndianNumber(num) {
-  const isNeg = num < 0;
-  const absNum = Math.abs(num);
-  const fixed = absNum.toFixed(2);
-  const parts = fixed.split(".");
-  let intPart = parts[0];
-  const decPart = parts[1];
-  if (intPart.length > 3) {
-    const last3 = intPart.substring(intPart.length - 3);
-    const rest = intPart.substring(0, intPart.length - 3);
-    const restFormatted = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
-    intPart = restFormatted + "," + last3;
-  }
-  return (isNeg ? "(" : "") + intPart + "." + decPart + (isNeg ? ")" : "");
+function getScaleDivisor(scaleStr) {
+  const s = String(scaleStr || "").toLowerCase().trim();
+  if (s.indexOf("crore") >= 0) return 10000000;
+  if (s.indexOf("lakh") >= 0 || s.indexOf("lac") >= 0) return 100000;
+  if (s.indexOf("million") >= 0) return 1000000;
+  if (s.indexOf("thousand") >= 0) return 1000;
+  return 1;
 }
 
-function applyScaleAndFormat(rawValue, type, scaleDivisor, scaleLabel) {
-  const valStr = String(rawValue || "").trim();
-  if (!valStr) return "";
-  
-  const typeNorm = String(type || "").trim().toUpperCase();
-  
-  if (typeNorm !== "VALUES" && typeNorm !== "VALUE") {
-    return valStr;
+function formatScaledNumber(num, divisor) {
+  const scaled = num / divisor;
+  if (Math.abs(scaled - Math.round(scaled)) < 0.001) {
+    return Math.round(scaled).toLocaleString("en-IN");
   }
-  
-  const cleanNum = valStr.replace(/[,\s\u20B9]/g, "");
-  const num = parseFloat(cleanNum);
-  if (isNaN(num)) return valStr;
-  
-  if (scaleDivisor && scaleDivisor > 1) {
-    const scaled = num / scaleDivisor;
-    return formatIndianNumber(scaled);
-  }
-  return formatIndianNumber(num);
+  return scaled.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function buildDynamicMap(rows, scaleInfo) {
+function buildDynMap(rows, scaleStr) {
   const map = {};
   if (!rows || rows.length < 2) return map;
-  const header = rows[0];
-  let colId = -1, colVal = -1, colType = -1;
-  for (let i = 0; i < header.length; i++) {
-    const h = String(header[i] || "").toLowerCase().trim();
-    if (colId < 0 && h.indexOf("dynamic") >= 0 && h.indexOf("para") < 0) colId = i;
-    if (colVal < 0 && h.indexOf("para") < 0 &&
-        (h === "data" || h === "value" || h.indexOf("example") >= 0)) colVal = i;
-    if (colType < 0 && (h === "type" || h.indexOf("type") >= 0) && h.indexOf("para") < 0) colType = i;
-  }
-  console.log("DynMap cols \u2192 ID:", colId, "Value:", colVal, "Type:", colType);
-  if (colId < 0 || colVal < 0) return map;
-  
-  const divisor = scaleInfo ? scaleInfo.divisor : 1;
-  const scaleLabel = scaleInfo ? scaleInfo.label : "";
-  
+  const divisor = getScaleDivisor(scaleStr);
+
   for (let r = 1; r < rows.length; r++) {
-    let id = String(rows[r][colId] || "").trim().toUpperCase().replace(/[\s-]/g, "_");
-    let rawVal = String(rows[r][colVal] || "").replace(/[<>`]/g, "").trim();
-    let type = colType >= 0 ? String(rows[r][colType] || "").trim() : "";
+    const id = String(rows[r][0] || "").trim().toUpperCase().replace(/[\s\-]/g, "_");
     if (!id) continue;
-    const finalVal = applyScaleAndFormat(rawVal, type, divisor, scaleLabel);
-    map[id] = finalVal;
+
+    const rawValue = rows[r][1];
+    const type = String(rows[r][3] || "").trim().toLowerCase();
+    let finalValue;
+
+    if (type === "value" && typeof rawValue === "number" && !isNaN(rawValue)) {
+      finalValue = formatScaledNumber(rawValue, divisor);
+    } else {
+      if (typeof rawValue === "number") {
+        finalValue = String(rawValue);
+      } else {
+        finalValue = String(rawValue || "");
+      }
+    }
+
+    map[id] = finalValue.replace(/[<>`]/g, "").trim();
   }
-  console.log("Dynamic map built:", Object.keys(map).length, "entries. Scale:", scaleLabel, "/", divisor);
   return map;
 }
 
-function replaceDynamics(text, dynMap, paraId, missingTracker) {
-  return String(text || "").replace(/<\s*((?:DV|DT|DD)[\s_\-]*\d+)[^>]*>/gi, function(match, id) {
-    const key = id.toUpperCase().replace(/[\s-]/g, "_");
-    if (dynMap[key] === undefined) {
-      if (missingTracker) {
-        missingTracker.items.push({ tag: key, paraId: paraId || "?" });
-      }
-      console.warn("Missing dynamic tag:", key, "in", paraId);
-      return MISS_OPEN + match + MISS_CLOSE;
+// ============================================================
+// Splits text into segments: { type: "text"|"missing", text: "..." }
+// Used for highlighting missing DVs in red/yellow
+// ============================================================
+function replaceDynWithMissing(text, map, missingSet) {
+  const segments = [];
+  const str = String(text || "");
+  const re = /<\s*((?:DV|DT|DD)[\s_\-]*\d+)[^>]*>/gi;
+  let lastIdx = 0;
+  let m;
+  while ((m = re.exec(str)) !== null) {
+    if (m.index > lastIdx) {
+      segments.push({ type: "text", text: str.substring(lastIdx, m.index) });
     }
-    return dynMap[key];
-  });
+    const id = m[1].toUpperCase().replace(/[\s\-]/g, "_");
+    if (map[id] !== undefined && map[id] !== "") {
+      segments.push({ type: "text", text: map[id] });
+    } else {
+      missingSet.add(id);
+      segments.push({ type: "missing", text: "[MISSING: " + id + "]" });
+    }
+    lastIdx = m.index + m[0].length;
+  }
+  if (lastIdx < str.length) {
+    segments.push({ type: "text", text: str.substring(lastIdx) });
+  }
+  return segments;
 }
 
-function buildTablesMap(rows) {
+function buildTableMap(rows) {
   const map = {};
   if (!rows || rows.length === 0) return map;
-  const lastRow = rows.length - 1;
-  const lastCol = rows[0] ? rows[0].length : 0;
-  
-  const header = rows[0] || [];
-  let colTableId = 0, colParaId = 1, colDataStart = 2;
-  for (let i = 0; i < header.length; i++) {
-    const h = String(header[i] || "").toLowerCase().trim();
-    if (h === "table_id" || h === "tableid" || h.indexOf("table id") >= 0 || h.indexOf("table_id") >= 0) colTableId = i;
-    if (h === "para_id" || h === "paraid" || h.indexOf("para id") >= 0 || h.indexOf("para_id") >= 0) colParaId = i;
-  }
-  colDataStart = Math.max(colTableId, colParaId) + 1;
-  
+  const lr = rows.length - 1;
+  const lc = rows[0] ? rows[0].length : 0;
   let r = 1;
-  while (r <= lastRow) {
-    const tableId = String((rows[r] && rows[r][colTableId]) || "").trim();
-    
-    if (tableId.toLowerCase().startsWith("table_")) {
-      const tableStartRow = r;
-      const paraId = normalizeId(String((rows[r] && rows[r][colParaId]) || ""));
-      
-      let endRow = r;
-      let lookAhead = r + 1;
-      while (lookAhead <= lastRow) {
-        const nextTableId = String((rows[lookAhead] && rows[lookAhead][colTableId]) || "").trim();
+  while (r <= lr) {
+    const tableId = String((rows[r] && rows[r][0]) || "").trim();
+    const paraId = String((rows[r] && rows[r][1]) || "").trim();
+    if (tableId.toLowerCase().startsWith("table_") && paraId) {
+      const headerRow = r;
+      let endRow = r + 1;
+      while (endRow <= lr) {
+        const nextTableId = String((rows[endRow] && rows[endRow][0]) || "").trim();
         if (nextTableId.toLowerCase().startsWith("table_")) break;
-        let hasData = false;
-        for (let c = colDataStart; c < lastCol; c++) {
-          if (rows[lookAhead] && String(rows[lookAhead][c] || "").trim() !== "") { hasData = true; break; }
+        let allEmpty = true;
+        for (let c = 2; c < lc; c++) {
+          if (String((rows[endRow] && rows[endRow][c]) || "").trim() !== "") { allEmpty = false; break; }
         }
-        if (hasData) endRow = lookAhead;
-        lookAhead++;
+        if (allEmpty) {
+          if (endRow + 1 > lr) break;
+          const nx = String((rows[endRow + 1] && rows[endRow + 1][0]) || "").trim();
+          if (nx === "" || nx.toLowerCase().startsWith("table_")) break;
+        }
+        endRow++;
       }
-      
-      let numCols = 0;
-      for (let rr = tableStartRow; rr <= endRow; rr++) {
-        for (let c = colDataStart; c < lastCol; c++) {
-          if (rows[rr] && String(rows[rr][c] || "").trim() !== "") {
-            if (c - colDataStart + 1 > numCols) numCols = c - colDataStart + 1;
+      while (endRow > headerRow) {
+        let allEmpty = true;
+        for (let c = 2; c < lc; c++) {
+          if (String((rows[endRow] && rows[endRow][c]) || "").trim() !== "") { allEmpty = false; break; }
+        }
+        if (!allEmpty) break;
+        endRow--;
+      }
+      let nc = 0;
+      for (let scanRow = headerRow; scanRow <= endRow; scanRow++) {
+        for (let c = 2; c < lc; c++) {
+          if (String((rows[scanRow] && rows[scanRow][c]) || "").trim() !== "") {
+            if (c - 2 + 1 > nc) nc = c - 2 + 1;
           }
         }
       }
-      if (numCols < 2) numCols = 2;
-      
-      const tableRows = [];
-      for (let rr = tableStartRow; rr <= endRow; rr++) {
-        const adjustedRow = [];
-        for (let c = 0; c < numCols; c++) {
-          const sourceCol = colDataStart + c;
-          adjustedRow.push((rows[rr] && rows[rr][sourceCol] !== undefined) ? rows[rr][sourceCol] : "");
+      if (nc < 2) nc = 2;
+      const pidMatch = /Para[_\s]*0*(\d+)/i.exec(paraId);
+      if (pidMatch) {
+        const pid = "Para_" + String(pidMatch[1]).padStart(2, "0");
+        if (!map[pid]) {
+          map[pid] = { key: "T_" + r, title: tableId, headerRow: headerRow, endRow: endRow, numCols: nc, allRows: rows, colOffset: 2 };
         }
-        tableRows.push(adjustedRow);
       }
-      
-      const info = {
-        key: "T_" + tableId,
-        title: tableId.replace(/_/g, " "),
-        headerRow: 0,
-        endRow: tableRows.length - 1,
-        numCols: numCols,
-        allRows: tableRows
-      };
-      
-      if (paraId && !map[paraId]) map[paraId] = info;
       r = endRow + 1;
     } else { r++; }
   }
   return map;
 }
 
-function showStatus(text, color) {
-  const colors = { blue: "#3b82f6", green: "#10b981", red: "#ef4444" };
-  const old = document.getElementById("statusBox");
-  if (old) old.remove();
-  const box = document.createElement("div");
-  box.id = "statusBox";
-  box.style.cssText = "padding:14px;background:" + (colors[color] || "#6b7280") +
-    ";color:white;font-weight:bold;margin:10px 0;border-radius:8px;font-size:13px;" +
-    "position:sticky;top:0;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.15);";
-  box.textContent = text;
-  document.body.insertBefore(box, document.body.firstChild);
+async function buildDoc(paraRows, dynMap, tableMap, B, version, meta) {
+  const d = docx;
+  const usedT = {}, gPH = {};
+  let tablesInc = 0;
+  const pageHeader = makeHeader(d, B, meta.logoBase64);
+
+  const titleSec = [
+    new d.Paragraph({ children: [new d.TextRun({ text: B.DOC_TITLE, bold: true, color: BRAND_BLUE, font: "Arial", size: 52 })], spacing: { before: 200, after: 80 } }),
+    new d.Paragraph({ children: [new d.TextRun({ text: B.DOC_SUBTITLE, color: TEXT_GREY, font: "Arial", size: 22 })], spacing: { after: 300 } })
+  ];
+
+  const hr = paraRows[0] || [];
+  const cP = findColIdx(hr, "Para");
+  const cL6 = findColIdx(hr, "Level 6");
+  const cL = [findColIdx(hr, "Level 1"), findColIdx(hr, "Level 2"), findColIdx(hr, "Level 3"), findColIdx(hr, "Level 4"), findColIdx(hr, "Level 5")];
+  const cV = findExactCol(hr, version);
+
+  const sections = [];
+  sections.push({
+    properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, type: d.SectionType.CONTINUOUS },
+    headers: { default: pageHeader }, children: titleSec
+  });
+
+  let cur = [];
+  function flush() {
+    if (cur.length === 0) return;
+    sections.push({
+      properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, column: { count: 2, space: 432 }, type: d.SectionType.CONTINUOUS },
+      headers: { default: pageHeader }, children: cur
+    });
+    cur = [];
+  }
+
+  let pc = 0, sc = 0;
+  const nf = numberer();
+  const stk = ["", "", "", "", ""];
+
+  for (let i = 1; i < paraRows.length; i++) {
+    const row = paraRows[i];
+    let emp = true;
+    for (let c = 0; c < hr.length; c++) if (String(row[c] || "").trim() !== "") { emp = false; break; }
+    if (emp) continue;
+    if (cV >= 0 && String(row[cV] || "").trim().toUpperCase() !== "Y") { sc++; continue; }
+    pc++;
+    const pid = normalizeId(String(row[cP] || ""));
+    const rt = [];
+    for (let l = 1; l <= 5; l++) { const ci = cL[l - 1]; rt.push(ci < 0 ? "" : cleanStr(String(row[ci] || ""))); }
+    let hf = -1;
+    for (let l = 0; l < 5; l++) if (rt[l]) { hf = l; break; }
+    const et = [];
+    if (hf === -1) for (let l = 0; l < 5; l++) et.push("");
+    else {
+      for (let l = 0; l < hf; l++) et.push(stk[l]);
+      et.push(rt[hf]); stk[hf] = rt[hf];
+      for (let l = hf + 1; l < 5; l++) stk[l] = "";
+      for (let l = hf + 1; l < 5; l++) { if (rt[l]) { et.push(rt[l]); stk[l] = rt[l]; } else et.push(""); }
+    }
+    const seen = {}, ft = [];
+    for (let l = 0; l < 5; l++) {
+      const t = et[l];
+      if (!t) { ft.push(null); continue; }
+      if (seen[t]) ft.push(null); else { seen[t] = true; ft.push(t); }
+    }
+    for (let l = 1; l <= 5; l++) {
+      const ht = ft[l - 1];
+      if (!ht || gPH[ht]) continue;
+      gPH[ht] = true;
+      const res = nf.assign(ht, l);
+      cur.push(makeHeading(d, res.number + " " + ht, l));
+    }
+    if (cL6 >= 0) {
+      let body = cleanStr(String(row[cL6] || ""));
+      if (body) {
+        const segments = replaceDynWithMissing(body, dynMap, meta.missingDVs);
+        cur.push(makeBodyWithSegments(d, segments));
+      }
+    }
+    if (tableMap[pid] && !usedT[tableMap[pid].key]) {
+      usedT[tableMap[pid].key] = true;
+      tablesInc++;
+      flush();
+      const tc = [];
+      tc.push(new d.Paragraph({ children: [new d.TextRun({ text: "" })], spacing: { before: 0, after: 0 }, keepNext: true, keepLines: true }));
+      tc.push(makeTable(d, tableMap[pid]));
+      tc.push(new d.Paragraph({ children: [new d.TextRun({ text: "" })], spacing: { after: 200 } }));
+      sections.push({
+        properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, type: d.SectionType.CONTINUOUS },
+        headers: { default: pageHeader }, children: tc
+      });
+    }
+  }
+  flush();
+
+  sections.push({
+    properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, type: d.SectionType.NEXT_PAGE },
+    headers: { default: pageHeader }, children: appendix(d, B, meta, pc, sc, tablesInc)
+  });
+
+  const doc = new d.Document({ styles: { default: { document: { run: { font: "Arial", size: 20 } } } }, sections: sections });
+  return await d.Packer.toBlob(doc);
+}
+
+function numberer() {
+  const c = [0, 0, 0, 0, 0];
+  const sn = {};
+  function tl(n) { let r = "", x = n; while (x > 0) { const m = (x - 1) % 26; r = String.fromCharCode(97 + m) + r; x = Math.floor((x - 1) / 26); } return r; }
+  function tr(n) { const m = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"]; return n <= 20 ? m[n] : String(n); }
+  function assign(t, l) {
+    const li = l - 1, k = c.slice(0, li).join(".") + "|" + t;
+    if (sn[k]) return { number: sn[k] };
+    c[li]++;
+    for (let i = li + 1; i < 5; i++) c[i] = 0;
+    let n = "";
+    if (l === 1) n = c[0] + ".";
+    else if (l === 2) n = c[0] + "." + c[1];
+    else if (l === 3) n = c[0] + "." + c[1] + "." + c[2];
+    else if (l === 4) n = "(" + tl(c[3]) + ")";
+    else if (l === 5) n = "(" + tr(c[4]) + ")";
+    sn[k] = n;
+    return { number: n };
+  }
+  return { assign };
+}
+
+function appendix(d, B, m, pc, sc, ti) {
+  const ch = [];
+  ch.push(new d.Paragraph({ children: [new d.TextRun({ text: "APPENDIX", bold: true, color: BRAND_BLUE, font: "Arial", size: 48 })], spacing: { before: 240, after: 80 } }));
+  ch.push(new d.Paragraph({ children: [new d.TextRun({ text: "Document Generation Information", color: TEXT_GREY, font: "Arial", size: 22, italics: true })], spacing: { after: 320 } }));
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dt = m.generatedOn;
+  let h = dt.getHours();
+  const mn = String(dt.getMinutes()).padStart(2, "0");
+  const ap = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  const ds = String(dt.getDate()).padStart(2, "0") + " " + months[dt.getMonth()] + " " + dt.getFullYear() + ", " + h + ":" + mn + " " + ap;
+
+  const missingArr = m.missingDVs ? Array.from(m.missingDVs) : [];
+  const missingCount = missingArr.length;
+  const missingList = missingCount > 0 ? missingArr.join(", ") : "None";
+
+  ch.push(kvTable(d, [
+    ["Document Title", B.DOC_TITLE], ["Subtitle", B.DOC_SUBTITLE],
+    ["Company", B.COMPANY_NAME], ["CIN", B.COMPANY_CIN],
+    ["Version", m.version], ["Version Detail", m.versionDetail],
+    ["Year", m.year || "-"], ["Scale", m.scale || "-"],
+    ["Generated By", m.generatedBy], ["Generated On", ds],
+    ["Source File", m.workbookName], ["Logo Source", m.logoSource],
+    ["Paragraphs Included", String(pc)], ["Paragraphs Skipped", String(sc)],
+    ["Tables Included", String(ti)],
+    ["Missing Dynamic Values (Count)", String(missingCount)],
+    ["Missing Dynamic Values (List)", missingList]
+  ]));
+  return ch;
+}
+
+function kvTable(d, rows) {
+  const b = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
+  const bs = { top: b, bottom: b, left: b, right: b };
+  const tr = rows.map((kv, i) => {
+    const bg = i % 2 === 1 ? "F4F7FC" : "FFFFFF";
+    // Highlight Missing DV rows in light red
+    const isMissingRow = String(kv[0]).indexOf("Missing Dynamic Values") >= 0 && kv[1] !== "0" && kv[1] !== "None";
+    const rowBg = isMissingRow ? "FEE2E2" : bg;
+    const labelColor = isMissingRow ? "991B1B" : DARK_BLUE;
+    return new d.TableRow({ cantSplit: true, children: [
+      new d.TableCell({ width: { size: 3400, type: d.WidthType.DXA }, borders: bs, shading: { type: d.ShadingType.CLEAR, fill: rowBg }, margins: { top: 100, bottom: 100, left: 140, right: 100 }, children: [new d.Paragraph({ children: [new d.TextRun({ text: kv[0], bold: true, color: labelColor, font: "Arial", size: 18 })] })] }),
+      new d.TableCell({ width: { size: 5960, type: d.WidthType.DXA }, borders: bs, shading: { type: d.ShadingType.CLEAR, fill: rowBg }, margins: { top: 100, bottom: 100, left: 140, right: 100 }, children: [new d.Paragraph({ children: [new d.TextRun({ text: kv[1], color: isMissingRow ? "991B1B" : TEXT_DARK, font: "Arial", size: 18, bold: isMissingRow })] })] })
+    ]});
+  });
+  return new d.Table({ width: { size: 9360, type: d.WidthType.DXA }, columnWidths: [3400, 5960], rows: tr });
+}
+
+function makeHeader(d, B, logoBase64) {
+  const headerChildren = [];
+  if (logoBase64) {
+    try {
+      const bin = atob(logoBase64);
+      const bt = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bt[i] = bin.charCodeAt(i);
+      headerChildren.push(new d.Paragraph({
+        alignment: d.AlignmentType.RIGHT,
+        children: [new d.ImageRun({ data: bt, transformation: { width: 140, height: 90 } })],
+        spacing: { before: 0, after: 80 }
+      }));
+    } catch (e) { console.warn("Logo error:", e); }
+  }
+  const nb = { top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.NONE }, left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE } };
+  headerChildren.push(new d.Table({
+    width: { size: 9360, type: d.WidthType.DXA },
+    columnWidths: [4680, 4680],
+    borders: {
+      top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.SINGLE, size: 6, color: BORDER_LIGHT },
+      left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE },
+      insideHorizontal: { style: d.BorderStyle.NONE }, insideVertical: { style: d.BorderStyle.NONE }
+    },
+    rows: [new d.TableRow({
+      children: [
+        new d.TableCell({
+          width: { size: 4680, type: d.WidthType.DXA }, borders: nb, verticalAlign: d.VerticalAlign.CENTER,
+          children: [
+            new d.Paragraph({ children: [new d.TextRun({ text: B.COMPANY_NAME, bold: true, color: BRAND_BLUE, font: "Arial", size: 22 })] }),
+            new d.Paragraph({ children: [new d.TextRun({ text: B.COMPANY_CIN, color: TEXT_GREY, font: "Arial", size: 16 })] })
+          ]
+        }),
+        new d.TableCell({
+          width: { size: 4680, type: d.WidthType.DXA }, borders: nb, verticalAlign: d.VerticalAlign.CENTER,
+          children: [
+            new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_TOP, bold: true, color: BRAND_BLUE, font: "Arial", size: 22 })] }),
+            new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_BOT, color: TEXT_GREY, font: "Arial", size: 16 })] })
+          ]
+        })
+      ]
+    })]
+  }));
+  return new d.Header({ children: headerChildren });
+}
+
+function makeHeading(d, t, l) {
+  let s, b, it, c, il;
+  switch (l) {
+    case 1: s = 26; b = true; it = false; c = BRAND_BLUE; il = 0; break;
+    case 2: s = 22; b = true; it = false; c = TEXT_DARK; il = 0; break;
+    case 3: s = 21; b = true; it = true; c = TEXT_DARK; il = 100; break;
+    case 4: s = 20; b = true; it = true; c = "404040"; il = 200; break;
+    default: s = 20; b = true; it = true; c = "555555"; il = 300;
+  }
+  return new d.Paragraph({ children: [new d.TextRun({ text: t, bold: b, italics: it, color: c, font: "Arial", size: s })], spacing: { before: l === 1 ? 280 : 200, after: l === 1 ? 140 : 100 }, indent: { left: il }, keepNext: true });
+}
+
+function makeBody(d, t) {
+  return new d.Paragraph({ alignment: d.AlignmentType.JUSTIFIED, children: [new d.TextRun({ text: t, color: TEXT_DARK, font: "Arial", size: 20 })], spacing: { after: 120 } });
+}
+
+// ============================================================
+// NEW: makeBodyWithSegments — renders text with highlighted missing DVs
+// ============================================================
+function makeBodyWithSegments(d, segments) {
+  const runs = segments.map(seg => {
+    if (seg.type === "missing") {
+      return new d.TextRun({
+        text: seg.text,
+        color: "CC0000",
+        bold: true,
+        font: "Arial",
+        size: 20,
+        highlight: "yellow"
+      });
+    }
+    return new d.TextRun({ text: seg.text, color: TEXT_DARK, font: "Arial", size: 20 });
+  });
+  return new d.Paragraph({
+    alignment: d.AlignmentType.JUSTIFIED,
+    children: runs,
+    spacing: { after: 120 }
+  });
+}
+
+function makeTitleBar(d, t) {
+  return new d.Paragraph({ children: [new d.TextRun({ text: t, bold: true, color: "FFFFFF", font: "Arial", size: 20 })], shading: { type: d.ShadingType.CLEAR, fill: TABLE_HEADER_BG }, spacing: { before: 160, after: 0 }, indent: { left: 80 }, keepNext: true, keepLines: true });
+}
+
+function makeTable(d, info) {
+  const nr = info.endRow - info.headerRow + 1;
+  const nc = info.numCols;
+  const colOffset = info.colOffset || 0;
+  if (nr < 1 || nc < 1) return new d.Paragraph({ children: [new d.TextRun({ text: "" })] });
+  const tw = 9360;
+  const fw = Math.floor(tw * 0.32);
+  const ow = nc > 1 ? Math.floor((tw - fw) / (nc - 1)) : (tw - fw);
+  const cw = [fw];
+  for (let c = 1; c < nc; c++) cw.push(ow);
+  const b = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
+  const bs = { top: b, bottom: b, left: b, right: b };
+  const rows = [];
+  for (let r = 0; r < nr; r++) {
+    const sr = info.headerRow + r;
+    const rd = info.allRows[sr] || [];
+    const ih = r === 0;
+    const fc = String(rd[colOffset] || "").trim();
+    let hl = false, sh = false;
+    if (!ih) {
+      const f = fc.toLowerCase();
+      if (f.startsWith("as at") || f.startsWith("at march") || f.startsWith("balance as") || f.startsWith("total")) hl = true;
+      let e = 0;
+      for (let c = 1; c < nc; c++) if (!rd[colOffset + c] || String(rd[colOffset + c]).trim() === "") e++;
+      if (e === nc - 1 && fc) sh = true;
+    }
+    const cells = [];
+    for (let c = 0; c < nc; c++) {
+      const actualCol = colOffset + c;
+      const ct = String(rd[actualCol] != null ? rd[actualCol] : "").trim();
+      let bg = "FFFFFF", tc = TEXT_DARK, fs = 14, iB = false, iI = false;
+      let al = c === 0 ? d.AlignmentType.LEFT : d.AlignmentType.RIGHT;
+      if (ih) { bg = TABLE_HEADER_BG; tc = "FFFFFF"; iB = true; al = d.AlignmentType.CENTER; }
+      else if (sh) { bg = LIGHT_BLUE; tc = DARK_BLUE; iB = true; iI = true; al = d.AlignmentType.LEFT; }
+      else if (hl) { bg = LIGHT_BLUE; tc = DARK_BLUE; iB = true; }
+      cells.push(new d.TableCell({
+        width: { size: c === 0 ? fw : ow, type: d.WidthType.DXA },
+        borders: bs, shading: { type: d.ShadingType.CLEAR, fill: bg },
+        margins: { top: 60, bottom: 60, left: 80, right: 80 },
+        children: [new d.Paragraph({ alignment: al, children: [new d.TextRun({ text: ct, bold: iB, italics: iI, color: tc, font: "Arial", size: fs })] })]
+      }));
+    }
+    rows.push(new d.TableRow({ children: cells, cantSplit: true }));
+  }
+  return new d.Table({ width: { size: tw, type: d.WidthType.DXA }, columnWidths: cw, rows: rows });
 }
 
 window.generate = generate;
+window.downloadTemplate = downloadTemplate;
+window.handleFileSelect = handleFileSelect;
+window.processPDF = processPDF;
