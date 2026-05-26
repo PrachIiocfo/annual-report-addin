@@ -1,3 +1,918 @@
-/*! For license information please see taskpane.js.LICENSE.txt */
-!function(){var e={60947:function(e,t,r){"use strict";e.exports=r.p+"851df73d2ff30cac0181.js"}},t={};function r(n){var a=t[n];if(void 0!==a)return a.exports;var i=t[n]={exports:{}};return e[n](i,i.exports,r),i.exports}r.m=e,r.g=function(){if("object"==typeof globalThis)return globalThis;try{return this||new Function("return this")()}catch(e){if("object"==typeof window)return window}}(),r.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},function(){var e;r.g.importScripts&&(e=r.g.location+"");var t=r.g.document;if(!e&&t&&(t.currentScript&&"SCRIPT"===t.currentScript.tagName.toUpperCase()&&(e=t.currentScript.src),!e)){var n=t.getElementsByTagName("script");if(n.length)for(var a=n.length-1;a>-1&&(!e||!/^http(s?):/.test(e));)e=n[a--].src}if(!e)throw new Error("Automatic publicPath is not supported in this browser");e=e.replace(/^blob:/,"").replace(/#.*$/,"").replace(/\?.*$/,"").replace(/\/[^\/]+$/,"/"),r.p=e}(),r.b="undefined"!=typeof document&&document.baseURI||self.location.href,function(){function e(){var r,n,a="function"==typeof Symbol?Symbol:{},i=a.iterator||"@@iterator",o=a.toStringTag||"@@toStringTag";function l(e,a,i,o){var l=a&&a.prototype instanceof c?a:c,u=Object.create(l.prototype);return t(u,"_invoke",function(e,t,a){var i,o,l,c=0,u=a||[],d=!1,f={p:0,n:0,v:r,a:p,f:p.bind(r,4),d:function(e,t){return i=e,o=0,l=r,f.n=t,s}};function p(e,t){for(o=e,l=t,n=0;!d&&c&&!a&&n<u.length;n++){var a,i=u[n],p=f.p,h=i[2];e>3?(a=h===t)&&(l=i[(o=i[4])?5:(o=3,3)],i[4]=i[5]=r):i[0]<=p&&((a=e<2&&p<i[1])?(o=0,f.v=t,f.n=i[1]):p<h&&(a=e<3||i[0]>t||t>h)&&(i[4]=e,i[5]=t,f.n=h,o=0))}if(a||e>1)return s;throw d=!0,t}return function(a,u,h){if(c>1)throw TypeError("Generator is already running");for(d&&1===u&&p(u,h),o=u,l=h;(n=o<2?r:l)||!d;){i||(o?o<3?(o>1&&(f.n=-1),p(o,l)):f.n=l:f.v=l);try{if(c=2,i){if(o||(a="next"),n=i[a]){if(!(n=n.call(i,l)))throw TypeError("iterator result is not an object");if(!n.done)return n;l=n.value,o<2&&(o=0)}else 1===o&&(n=i.return)&&n.call(i),o<2&&(l=TypeError("The iterator does not provide a '"+a+"' method"),o=1);i=r}else if((n=(d=f.n<0)?l:e.call(t,f))!==s)break}catch(e){i=r,o=1,l=e}finally{c=1}}return{value:n,done:d}}}(e,i,o),!0),u}var s={};function c(){}function u(){}function d(){}n=Object.getPrototypeOf;var f=[][i]?n(n([][i]())):(t(n={},i,function(){return this}),n),p=d.prototype=c.prototype=Object.create(f);function h(e){return Object.setPrototypeOf?Object.setPrototypeOf(e,d):(e.__proto__=d,t(e,o,"GeneratorFunction")),e.prototype=Object.create(p),e}return u.prototype=d,t(p,"constructor",d),t(d,"constructor",u),u.displayName="GeneratorFunction",t(d,o,"GeneratorFunction"),t(p),t(p,o,"Generator"),t(p,i,function(){return this}),t(p,"toString",function(){return"[object Generator]"}),(e=function(){return{w:l,m:h}})()}function t(e,r,n,a){var i=Object.defineProperty;try{i({},"",{})}catch(e){i=0}t=function(e,r,n,a){function o(r,n){t(e,r,function(e){return this._invoke(r,n,e)})}r?i?i(e,r,{value:n,enumerable:!a,configurable:!a,writable:!a}):e[r]=n:(o("next",0),o("throw",1),o("return",2))},t(e,r,n,a)}function r(e,t){return function(e){if(Array.isArray(e))return e}(e)||function(e,t){var r=null==e?null:"undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(null!=r){var n,a,i,o,l=[],s=!0,c=!1;try{if(i=(r=r.call(e)).next,0===t){if(Object(r)!==r)return;s=!1}else for(;!(s=(n=i.call(r)).done)&&(l.push(n.value),l.length!==t);s=!0);}catch(e){c=!0,a=e}finally{try{if(!s&&null!=r.return&&(o=r.return(),Object(o)!==o))return}finally{if(c)throw a}}return l}}(e,t)||n(e,t)||function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function n(e,t){if(e){if("string"==typeof e)return a(e,t);var r={}.toString.call(e).slice(8,-1);return"Object"===r&&e.constructor&&(r=e.constructor.name),"Map"===r||"Set"===r?Array.from(e):"Arguments"===r||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(r)?a(e,t):void 0}}function a(e,t){(null==t||t>e.length)&&(t=e.length);for(var r=0,n=Array(t);r<t;r++)n[r]=e[r];return n}function i(e,t,r,n,a,i,o){try{var l=e[i](o),s=l.value}catch(e){return void r(e)}l.done?t(s):Promise.resolve(s).then(n,a)}function o(e){return function(){var t=this,r=arguments;return new Promise(function(n,a){var o=e.apply(t,r);function l(e){i(o,n,a,l,s,"next",e)}function s(e){i(o,n,a,l,s,"throw",e)}l(void 0)})}}var l="1E3A8A",s="4B3293",c="DBEAFE",u="1E3A8A",d="1F2937",f="646464",p="C00000",h="☠MISS☠",g="☠/MISS☠",y={LAKH:1e5,LAKHS:1e5,CRORE:1e7,CRORES:1e7,THOUSAND:1e3,THOUSANDS:1e3,MILLION:1e6,MILLIONS:1e6,BILLION:1e9,NONE:1,"":1};function m(){return{COMPANY_NAME:(document.getElementById("companyName")||{}).value||"BLUE STAR LIMITED",COMPANY_CIN:(document.getElementById("companyCIN")||{}).value||"",HEADER_RIGHT_TOP:(document.getElementById("headerRightTop")||{}).value||"Financial Statements",HEADER_RIGHT_BOT:(document.getElementById("headerRightBot")||{}).value||"Consolidated",DOC_TITLE:(document.getElementById("docTitle")||{}).value||"Notes to Consolidated Financial Statements",DOC_SUBTITLE:(document.getElementById("docSubtitle")||{}).value||"for the year ended March 31, 2025"}}function b(){return b=o(e().m(function t(){var r,n,a,i,l,s,c,u,d,f,p,h,g,y,b,T;return e().w(function(t){for(;;)switch(t.p=t.n){case 0:return t.p=0,j("Reading Excel data...","blue"),r=m(),t.n=1,Excel.run(function(){var t=o(e().m(function t(r){var n,a,i,o,l,s,c,u,d,f,p;return e().w(function(e){for(;;)switch(e.n){case 0:n=r.workbook,a=n.worksheets.getItem("Para_ID"),i=n.worksheets.getItem("Dynamic Values"),o=n.worksheets.getItem("Tables"),l=n.worksheets.getItem("Landing_Page"),s=null;try{c=n.worksheets.getItem("Version Maintenance"),(s=c.getUsedRange()).load("values")}catch(e){console.log("VM not found:",e.message)}return u=a.getUsedRange(),d=i.getUsedRange(),f=o.getUsedRange(),p=l.getRange("C2"),n.load("name"),u.load("values"),d.load("values"),f.load("values"),p.load("values"),e.n=1,r.sync();case 1:return e.a(2,{paragraphs:u.values,dynamics:d.values,tables:f.values,selectedVersion:String(p.values[0][0]||"V1").trim().toUpperCase(),versionMaint:s?s.values:null,workbookName:n.name||"Unknown.xlsx"})}},t)}));return function(e){return t.apply(this,arguments)}}());case 1:if(n=t.v,console.log("Selected version:",n.selectedVersion),j("Loading logo...","blue"),a=w(n.versionMaint,n.selectedVersion),i=null,l={w:0,h:0},!a){t.n=4;break}return t.n=2,x(a);case 2:if(!(i=t.v)){t.n=4;break}return t.n=3,A(i);case 3:l=t.v;case 4:return s=v(n.versionMaint,n.selectedVersion),console.log("Scale for "+n.selectedVersion+":",s),j("Building "+n.selectedVersion+" Word document...","blue"),c=G(n.dynamics,s),u=V(n.tables),d=R(n.versionMaint,n.selectedVersion),f=Office.context&&Office.context.displayName||"User",p={items:[]},h={version:n.selectedVersion,versionDetail:d,generatedBy:f,generatedOn:new Date,workbookName:n.workbookName,logoBase64:i,logoDims:l,scaleLabel:s.label,scaleDivisor:s.divisor},t.n=5,O(n.paragraphs,c,u,r,n.selectedVersion,h,p);case 5:g=t.v,y=URL.createObjectURL(g),(b=document.createElement("a")).href=y,b.download="Annual_Report_"+n.selectedVersion+"_"+Date.now()+".docx",b.click(),URL.revokeObjectURL(y),j(p.items.length>0?"✓ "+n.selectedVersion+" downloaded — ⚠ "+p.items.length+" missing tag(s)":"✓ "+n.selectedVersion+" Word file downloaded!",p.items.length>0?"blue":"green"),t.n=7;break;case 6:t.p=6,T=t.v,console.error("Error:",T),j("Error: "+T.message,"red");case 7:return t.a(2)}},t,null,[[0,6]])})),b.apply(this,arguments)}function w(e,t){if(!e||0===e.length)return null;for(var r=e[0]||[],n=-1,a=0;a<r.length;a++){var i=String(r[a]||"").toLowerCase();if(i.indexOf("logo")>=0||i.indexOf("url")>=0||i.indexOf("image")>=0){n=a;break}}if(n<0&&r.length>5&&(n=5),n<0)return null;for(var o=1;o<e.length;o++){var l=e[o];if(l&&String(l[0]||"").trim().toUpperCase()===t){var s=String(l[n]||"").trim();if(s&&(s.startsWith("http://")||s.startsWith("https://")))return s}}return null}function v(e,t){var r={label:"",divisor:1};if(!e||0===e.length)return r;for(var n=e[0]||[],a=-1,i=0;i<n.length;i++){var o=String(n[i]||"").toLowerCase().trim();if("scale"===o||o.indexOf("scale")>=0){a=i;break}}if(a<0)return r;for(var l=1;l<e.length;l++){var s=e[l];if(s&&String(s[0]||"").trim().toUpperCase()===t){var c=String(s[a]||"").trim(),u=c.toUpperCase();return{label:c,divisor:void 0!==y[u]?y[u]:1}}}return r}function T(e){if(!e)return e;var t=String(e).trim();return(t=t.replace(/[\?&]raw=true/gi,"")).indexOf("github.com/")>=0&&t.indexOf("/blob/")>=0&&(t=(t=t.replace("github.com/","raw.githubusercontent.com/")).replace("/blob/","/")),t}function x(e){return S.apply(this,arguments)}function S(){return(S=o(e().m(function t(r){var n,a,i;return e().w(function(e){for(;;)switch(e.p=e.n){case 0:return e.p=0,n=T(r),e.n=1,fetch(n);case 1:if((a=e.v).ok){e.n=2;break}return e.a(2,null);case 2:return e.n=3,a.blob();case 3:return i=e.v,e.n=4,new Promise(function(e,t){var r=new FileReader;r.onloadend=function(){var t=r.result,n=t.indexOf(",");e(n>=0?t.substring(n+1):t)},r.onerror=t,r.readAsDataURL(i)});case 4:return e.a(2,e.v);case 5:return e.p=5,e.v,e.a(2,null)}},t,null,[[0,5]])}))).apply(this,arguments)}function A(e){return new Promise(function(t){var r=new Image;r.onload=function(){return t({w:r.naturalWidth,h:r.naturalHeight})},r.onerror=function(){return t({w:0,h:0})},r.src="data:image/png;base64,"+e})}function R(e,t){if(!e||0===e.length)return"-";for(var r=0;r<e.length;r++){var n=e[r];if(n&&0!==n.length&&String(n[0]||"").trim().toUpperCase()===t)return String(n[1]||"-").trim()}return"-"}function E(){var e=[0,0,0,0,0],t={};return{assign:function(n,a){var i=a-1,o=e.slice(0,i).join(".")+"|"+n;if(t[o])return{number:t[o],isNew:!1};e[i]++;for(var l=i+1;l<5;l++)e[l]=0;var s="";return 1===a?s=e[0]+".":2===a?s=e[0]+"."+e[1]:3===a?s=e[0]+"."+e[1]+"."+e[2]:4===a?s="("+function(e){for(var t="",r=e;r>0;){var n=(r-1)%26;t=String.fromCharCode(97+n)+t,r=Math.floor((r-1)/26)}return t}(e[3])+")":5===a&&(s="("+function(e){if(e<=20)return["","i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii","xiii","xiv","xv","xvi","xvii","xviii","xix","xx"][e];for(var t="",n=e,a=0,i=[[1e3,"m"],[900,"cm"],[500,"d"],[400,"cd"],[100,"c"],[90,"xc"],[50,"l"],[40,"xl"],[10,"x"],[9,"ix"],[5,"v"],[4,"iv"],[1,"i"]];a<i.length;a++)for(var o=r(i[a],2),l=o[0],s=o[1];n>=l;)t+=s,n-=l;return t}(e[4])+")"),t[o]=s,{number:s,isNew:!0}}}}function O(e,t,r,n,a,i,o){return C.apply(this,arguments)}function C(){return(C=o(e().m(function t(r,n,a,i,o,s,c){var u,d,p,h,g,y,m,b,w,v,T,x,S,A,R,O,C,I,F,L,H,G,V,j,X,Y,J,$,K,q,Q,Z,ee,te,re,ne,ae,ie,oe,le,se,ce,ue,de,fe,pe;return e().w(function(e){for(;;)switch(e.n){case 0:A=function(){0!==S.length&&(x.push({properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1080,bottom:1080,left:1080}},column:{count:2,space:432},type:u.SectionType.CONTINUOUS},headers:{default:g},children:S}),S=[])},u=docx,d={},p={},h=0,g=D(u,i,s.logoBase64,s.logoDims),y=[new u.Paragraph({children:[new u.TextRun({text:i.DOC_TITLE,bold:!0,color:l,font:"Arial",size:52})],spacing:{before:240,after:80}}),new u.Paragraph({children:[new u.TextRun({text:i.DOC_SUBTITLE,color:f,font:"Arial",size:22})],spacing:{after:360}})],m=r[0]||[],b=B(m,"Para"),w=B(m,"Level 6"),v=[B(m,"Level 1"),B(m,"Level 2"),B(m,"Level 3"),B(m,"Level 4"),B(m,"Level 5")],T=_(m,o),(x=[]).push({properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1080,bottom:1080,left:1080}},type:u.SectionType.CONTINUOUS},headers:{default:g},children:y}),S=[],R=0,O=0,C=E(),I=["","","","",""],F=1;case 1:if(!(F<r.length)){e.n=24;break}L=r[F],H=!0,G=0;case 2:if(!(G<m.length)){e.n=4;break}if(""===String(L[G]||"").trim()){e.n=3;break}return H=!1,e.a(3,4);case 3:G++,e.n=2;break;case 4:if(!H){e.n=5;break}return e.a(3,23);case 5:if(!(T>=0)){e.n=6;break}if("Y"===String(L[T]||"").trim().toUpperCase()){e.n=6;break}return O++,e.a(3,23);case 6:R++,V=M(String(L[b]||"")),j=[],X=1;case 7:if(!(X<=5)){e.n=10;break}if(!((Y=v[X-1])<0)){e.n=8;break}return j.push(""),e.a(3,9);case 8:j.push(U(String(L[Y]||"")));case 9:X++,e.n=7;break;case 10:J=-1,$=0;case 11:if(!($<5)){e.n=13;break}if(!j[$]){e.n=12;break}return J=$,e.a(3,13);case 12:$++,e.n=11;break;case 13:if(K=[],-1===J)for(q=0;q<5;q++)K.push("");else{for(Q=0;Q<J;Q++)K.push(I[Q]);for(K.push(j[J]),I[J]=j[J],Z=J+1;Z<5;Z++)I[Z]="";for(ee=J+1;ee<5;ee++)j[ee]?(K.push(j[ee]),I[ee]=j[ee]):K.push("")}te={},re=[],ne=0;case 14:if(!(ne<5)){e.n=17;break}if(ae=K[ne]){e.n=15;break}return re.push(null),e.a(3,16);case 15:te[ae]?re.push(null):(te[ae]=!0,re.push(ae));case 16:ne++,e.n=14;break;case 17:ie=1;case 18:if(!(ie<=5)){e.n=22;break}if(oe=re[ie-1]){e.n=19;break}return e.a(3,21);case 19:if(!p[oe]){e.n=20;break}return e.a(3,21);case 20:p[oe]=!0,le=C.assign(oe,ie),se=le.number+" "+oe,S.push(P(u,se,ie));case 21:ie++,e.n=18;break;case 22:w>=0&&(ce=U(String(L[w]||"")))&&(ce=W(ce,n,V,c),S.push(k(u,ce))),a[V]&&(ue=a[V].key,d[ue]||(d[ue]=!0,h++,A(),(de=[]).push(z(u,a[V])),de.push(new u.Paragraph({children:[new u.TextRun({text:""})],spacing:{after:200}})),x.push({properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1080,bottom:1080,left:1080}},type:u.SectionType.CONTINUOUS},headers:{default:g},children:de})));case 23:F++,e.n=1;break;case 24:return A(),fe=N(u,i,s,R,O,h,c),x.push({properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1080,bottom:1080,left:1080}},type:u.SectionType.NEXT_PAGE},headers:{default:g},children:fe}),pe=new u.Document({styles:{default:{document:{run:{font:"Arial",size:20}}}},sections:x}),e.n=25,u.Packer.toBlob(pe);case 25:return e.a(2,e.v)}},t)}))).apply(this,arguments)}function N(e,t,r,a,i,o,c){var u=[];u.push(new e.Paragraph({children:[new e.TextRun({text:"APPENDIX",bold:!0,color:l,font:"Arial",size:48})],spacing:{before:240,after:80}})),u.push(new e.Paragraph({children:[new e.TextRun({text:"Document Generation Information",color:f,font:"Arial",size:22,italics:!0})],spacing:{after:320}})),u.push(L(e,"Generation Details"));var h=function(e){var t=e||new Date,r=String(t.getDate()).padStart(2,"0"),n=t.getHours(),a=String(t.getMinutes()).padStart(2,"0"),i=n>=12?"PM":"AM";return 0==(n%=12)&&(n=12),r+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][t.getMonth()]+" "+t.getFullYear()+", "+n+":"+a+" "+i}(r.generatedOn),g=[["Document Title",t.DOC_TITLE],["Subtitle",t.DOC_SUBTITLE],["Company",t.COMPANY_NAME],["CIN",t.COMPANY_CIN],["Version Used",r.version],["Version Detail",r.versionDetail],["Scale Applied",r.scaleLabel||"None"],["Generated By",r.generatedBy],["Generated On",h],["Source File",r.workbookName],["Logo Source",r.logoBase64?"Loaded from URL":"Not available"]];u.push(I(e,g)),u.push(new e.Paragraph({children:[new e.TextRun({text:"",size:12})],spacing:{before:200}})),u.push(L(e,"Content Statistics"));var y=c?c.items.length:0,m=[["Paragraphs Included",String(a)],["Paragraphs Skipped",String(i)],["Tables Included",String(o)],["Total Rows in Para_ID",String(a+i)],["Missing Dynamic Values",String(y)+(y>0?" ⚠":"")]];return u.push(I(e,m)),y>0&&(u.push(new e.Paragraph({children:[new e.TextRun({text:"",size:12})],spacing:{before:240}})),u.push(L(e,"Missing Dynamic Values — Review Required")),u.push(new e.Paragraph({children:[new e.TextRun({text:"The following dynamic value tags were referenced in paragraphs but not found in the Dynamic Values sheet. Please verify these values before finalising the document.",color:f,italics:!0,font:"Arial",size:18})],spacing:{before:100,after:200}})),u.push(function(e,t){var r,a={style:e.BorderStyle.SINGLE,size:4,color:"C8D2E6"},i={top:a,bottom:a,left:a,right:a},o={},l=function(e){var t="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(!t){if(Array.isArray(e)||(t=n(e))){t&&(e=t);var r=0,a=function(){};return{s:a,n:function(){return r>=e.length?{done:!0}:{done:!1,value:e[r++]}},e:function(e){throw e},f:a}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var i,o=!0,l=!1;return{s:function(){t=t.call(e)},n:function(){var e=t.next();return o=e.done,e},e:function(e){l=!0,i=e},f:function(){try{o||null==t.return||t.return()}finally{if(l)throw i}}}}(t);try{for(l.s();!(r=l.n()).done;){var c=r.value;o[c.tag]||(o[c.tag]=[]),-1===o[c.tag].indexOf(c.paraId)&&o[c.tag].push(c.paraId)}}catch(e){l.e(e)}finally{l.f()}var u=[];u.push(new e.TableRow({cantSplit:!0,tableHeader:!0,children:[new e.TableCell({width:{size:3e3,type:e.WidthType.DXA},borders:i,shading:{type:e.ShadingType.CLEAR,fill:s},margins:{top:80,bottom:80,left:120,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:"Dynamic Tag",bold:!0,color:"FFFFFF",font:"Arial",size:18})]})]}),new e.TableCell({width:{size:6360,type:e.WidthType.DXA},borders:i,shading:{type:e.ShadingType.CLEAR,fill:s},margins:{top:80,bottom:80,left:120,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:"Used in Paragraph(s)",bold:!0,color:"FFFFFF",font:"Arial",size:18})]})]})]}));for(var f=Object.keys(o).sort(),h=0;h<f.length;h++){var g=f[h],y=h%2==1?"FFF3CD":"FFFFFF";u.push(new e.TableRow({cantSplit:!0,children:[new e.TableCell({width:{size:3e3,type:e.WidthType.DXA},borders:i,shading:{type:e.ShadingType.CLEAR,fill:y},margins:{top:80,bottom:80,left:120,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:g,bold:!0,color:p,font:"Arial",size:18})]})]}),new e.TableCell({width:{size:6360,type:e.WidthType.DXA},borders:i,shading:{type:e.ShadingType.CLEAR,fill:y},margins:{top:80,bottom:80,left:120,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:o[g].join(", "),color:d,font:"Arial",size:18})]})]})]}))}return new e.Table({width:{size:9360,type:e.WidthType.DXA},columnWidths:[3e3,6360],rows:u,layout:e.TableLayoutType.FIXED})}(e,c.items))),u.push(new e.Paragraph({children:[new e.TextRun({text:"",size:20})],spacing:{before:400}})),u.push(new e.Paragraph({alignment:e.AlignmentType.CENTER,children:[new e.TextRun({text:"Generated by Annual Report Auto-Generator  •  iOCFO Consulting",color:f,font:"Arial",size:18,italics:!0})]})),u.push(new e.Paragraph({alignment:e.AlignmentType.CENTER,children:[new e.TextRun({text:h,color:f,font:"Arial",size:16})],spacing:{after:200}})),u}function I(e,t){var r={style:e.BorderStyle.SINGLE,size:4,color:"C8D2E6"},n={top:r,bottom:r,left:r,right:r},a=t.map(function(t,r){var a=r%2==1?"F4F7FC":"FFFFFF";return new e.TableRow({cantSplit:!0,children:[new e.TableCell({width:{size:3400,type:e.WidthType.DXA},borders:n,shading:{type:e.ShadingType.CLEAR,fill:a},margins:{top:100,bottom:100,left:140,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:t[0],bold:!0,color:u,font:"Arial",size:18})]})]}),new e.TableCell({width:{size:5960,type:e.WidthType.DXA},borders:n,shading:{type:e.ShadingType.CLEAR,fill:a},margins:{top:100,bottom:100,left:140,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:t[1],color:d,font:"Arial",size:18})]})]})]})});return new e.Table({width:{size:9360,type:e.WidthType.DXA},columnWidths:[3400,5960],rows:a,layout:e.TableLayoutType.FIXED})}function D(e,t,r,n){var a;if(r)try{var i=function(e){try{for(var t=atob(e),r=new Uint8Array(t.length),n=0;n<t.length;n++)r[n]=t.charCodeAt(n);return r}catch(e){return null}}(r);if(!(i&&i.length>0))throw new Error("Empty bytes");var o=150,s=o,c=55;if(n&&n.w>0&&n.h>0){var u=n.w/n.h;c=55,(s=Math.round(55*u))>o&&(s=o,c=Math.round(o/u))}a=[new e.Paragraph({alignment:e.AlignmentType.RIGHT,spacing:{after:100},children:[new e.ImageRun({data:i,transformation:{width:s,height:c}})]}),new e.Paragraph({alignment:e.AlignmentType.RIGHT,spacing:{after:20},children:[new e.TextRun({text:t.HEADER_RIGHT_TOP,bold:!0,color:l,font:"Arial",size:18})]}),new e.Paragraph({alignment:e.AlignmentType.RIGHT,children:[new e.TextRun({text:t.HEADER_RIGHT_BOT,color:f,font:"Arial",size:15})]})]}catch(r){a=[new e.Paragraph({alignment:e.AlignmentType.RIGHT,children:[new e.TextRun({text:t.HEADER_RIGHT_TOP,bold:!0,color:l,font:"Arial",size:20})]}),new e.Paragraph({alignment:e.AlignmentType.RIGHT,children:[new e.TextRun({text:t.HEADER_RIGHT_BOT,color:f,font:"Arial",size:16})]})]}else a=[new e.Paragraph({alignment:e.AlignmentType.RIGHT,children:[new e.TextRun({text:t.HEADER_RIGHT_TOP,bold:!0,color:l,font:"Arial",size:20})]}),new e.Paragraph({alignment:e.AlignmentType.RIGHT,children:[new e.TextRun({text:t.HEADER_RIGHT_BOT,color:f,font:"Arial",size:16})]})];return new e.Header({children:[new e.Table({width:{size:9360,type:e.WidthType.DXA},columnWidths:[4680,4680],borders:{top:{style:e.BorderStyle.NONE},bottom:{style:e.BorderStyle.SINGLE,size:6,color:"B4C8DC"},left:{style:e.BorderStyle.NONE},right:{style:e.BorderStyle.NONE},insideHorizontal:{style:e.BorderStyle.NONE},insideVertical:{style:e.BorderStyle.NONE}},rows:[new e.TableRow({children:[new e.TableCell({width:{size:4680,type:e.WidthType.DXA},borders:F(e),verticalAlign:e.VerticalAlign.CENTER,margins:{top:80,bottom:80,left:0,right:0},children:[new e.Paragraph({children:[new e.TextRun({text:t.COMPANY_NAME,bold:!0,color:l,font:"Arial",size:22})]}),new e.Paragraph({children:[new e.TextRun({text:t.COMPANY_CIN,color:f,font:"Arial",size:16})]})]}),new e.TableCell({width:{size:4680,type:e.WidthType.DXA},borders:F(e),verticalAlign:e.VerticalAlign.CENTER,margins:{top:80,bottom:80,left:0,right:0},children:a})]})]})]})}function F(e){return{top:{style:e.BorderStyle.NONE},bottom:{style:e.BorderStyle.NONE},left:{style:e.BorderStyle.NONE},right:{style:e.BorderStyle.NONE}}}function P(e,t,r){var n,a,i,o,s;switch(r){case 1:n=26,a=!0,i=!1,o=l,s=0;break;case 2:n=22,a=!0,i=!1,o=d,s=0;break;case 3:n=21,a=!0,i=!0,o=d,s=100;break;case 4:n=20,a=!0,i=!0,o="404040",s=200;break;default:n=20,a=!0,i=!0,o="555555",s=300}return new e.Paragraph({children:[new e.TextRun({text:t,bold:a,italics:i,color:o,font:"Arial",size:n})],spacing:{before:1===r?280:200,after:1===r?140:100},indent:{left:s},keepNext:!0})}function k(e,t){var r=function(e,t){for(var r,n=[],a=0,i=new RegExp(h+"(.*?)"+g,"g");null!==(r=i.exec(t));)r.index>a&&n.push(new e.TextRun({text:t.substring(a,r.index),color:d,font:"Arial",size:20})),n.push(new e.TextRun({text:r[1],bold:!0,color:p,font:"Arial",size:20,highlight:"yellow"})),a=r.index+r[0].length;return a<t.length&&n.push(new e.TextRun({text:t.substring(a),color:d,font:"Arial",size:20})),0===n.length&&n.push(new e.TextRun({text:t,color:d,font:"Arial",size:20})),n}(e,t);return new e.Paragraph({alignment:e.AlignmentType.JUSTIFIED,children:r,spacing:{after:120}})}function L(e,t){var r=9360;return new e.Table({width:{size:r,type:e.WidthType.DXA},columnWidths:[r],layout:e.TableLayoutType.FIXED,borders:{top:{style:e.BorderStyle.NONE},bottom:{style:e.BorderStyle.NONE},left:{style:e.BorderStyle.NONE},right:{style:e.BorderStyle.NONE},insideHorizontal:{style:e.BorderStyle.NONE},insideVertical:{style:e.BorderStyle.NONE}},rows:[new e.TableRow({cantSplit:!0,children:[new e.TableCell({width:{size:r,type:e.WidthType.DXA},shading:{type:e.ShadingType.CLEAR,fill:s},margins:{top:80,bottom:80,left:140,right:100},children:[new e.Paragraph({children:[new e.TextRun({text:t,bold:!0,color:"FFFFFF",font:"Arial",size:20})],keepNext:!0})]})]})]})}function z(e,t){var r=t.endRow-t.headerRow+1,n=t.numCols;if(r<1||n<1)return new e.Paragraph({children:[new e.TextRun({text:""})]});for(var a=9360,i=new Array(n).fill(1),o=0;o<r;o++)for(var l=t.allRows[t.headerRow+o]||[],f=0;f<n;f++){var p=String(l[f]||"").length;p>i[f]&&(i[f]=p)}var h=i.map(function(e,t){return Math.max(e,5)*(0===t?1.3:1)}),g=h.reduce(function(e,t){return e+t},0),y=h.map(function(e){return Math.max(700,Math.floor(e/g*a))}),m=y.reduce(function(e,t){return e+t},0);if(m>a){var b=a/m;m=(y=y.map(function(e){return Math.floor(e*b)})).reduce(function(e,t){return e+t},0)}y[0]+=a-m;for(var w={style:e.BorderStyle.SINGLE,size:4,color:"C8D2E6"},v={top:w,bottom:w,left:w,right:w},T=[],x=0;x<r;x++){var S=t.headerRow+x,A=t.allRows[S]||[],R=0===x,E=String(A[0]||"").trim(),O=!1,C=!1;if(!R){var N=E.toLowerCase();(N.startsWith("as at")||N.startsWith("at march")||N.startsWith("balance as")||N.startsWith("total"))&&(O=!0);for(var I=0,D=1;D<n;D++)A[D]&&""!==String(A[D]).trim()||I++;I===n-1&&E&&(C=!0)}for(var F=[],P=0;P<n;P++){var k=String(void 0!==A[P]&&null!==A[P]?A[P]:"").trim(),L="FFFFFF",z=d,B=!1,_=!1,U=0===P?e.AlignmentType.LEFT:e.AlignmentType.RIGHT;R?(L=s,z="FFFFFF",B=!0,U=e.AlignmentType.CENTER):C?(L=c,z=u,B=!0,_=!0,U=e.AlignmentType.LEFT):O&&(L=c,z=u,B=!0),F.push(new e.TableCell({width:{size:y[P],type:e.WidthType.DXA},borders:v,shading:{type:e.ShadingType.CLEAR,fill:L},margins:{top:80,bottom:80,left:100,right:100},children:[new e.Paragraph({alignment:U,keepNext:R,keepLines:!0,children:[new e.TextRun({text:k,bold:B,italics:_,color:z,font:"Arial",size:16})]})]}))}T.push(new e.TableRow({children:F,cantSplit:!0,tableHeader:R}))}return new e.Table({width:{size:a,type:e.WidthType.DXA},columnWidths:y,rows:T,layout:e.TableLayoutType.FIXED})}function B(e,t){for(var r=0;r<e.length;r++)if(String(e[r]||"").toLowerCase().indexOf(t.toLowerCase())>=0)return r;return-1}function _(e,t){for(var r=String(t).trim().toUpperCase(),n=0;n<e.length;n++)if(String(e[n]||"").trim().toUpperCase()===r)return n;return-1}function U(e){return String(e||"").replace(/\r/g," ").replace(/\n/g," ").replace(/\t/g," ").replace(/`/g,"").replace(/\s+/g," ").trim()}function M(e){var t=/Para[_\s]*0*(\d+)/i.exec(String(e||""));return t?"Para_"+String(t[1]).padStart(3,"0"):String(e||"").trim()}function H(e,t,r,n){var a=String(e||"").trim();if(!a)return"";var i=String(t||"").trim().toUpperCase();if("VALUES"!==i&&"VALUE"!==i)return a;var o=a.replace(/[,\s\u20B9]/g,""),l=parseFloat(o);return isNaN(l)?a:function(e){var t=e<0,r=Math.abs(e).toFixed(2).split("."),n=r[0],a=r[1];if(n.length>3){var i=n.substring(n.length-3),o=n.substring(0,n.length-3);n=o.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+i}return(t?"(":"")+n+"."+a+(t?")":"")}(r&&r>1?l/r:l)}function G(e,t){var r={};if(!e||e.length<2)return r;for(var n=e[0],a=-1,i=-1,o=-1,l=0;l<n.length;l++){var s=String(n[l]||"").toLowerCase().trim();a<0&&s.indexOf("dynamic")>=0&&s.indexOf("para")<0&&(a=l),i<0&&s.indexOf("para")<0&&("data"===s||"value"===s||s.indexOf("example")>=0)&&(i=l),o<0&&("type"===s||s.indexOf("type")>=0)&&s.indexOf("para")<0&&(o=l)}if(console.log("DynMap cols → ID:",a,"Value:",i,"Type:",o),a<0||i<0)return r;for(var c=t?t.divisor:1,u=t?t.label:"",d=1;d<e.length;d++){var f=String(e[d][a]||"").trim().toUpperCase().replace(/[\s-]/g,"_"),p=String(e[d][i]||"").replace(/[<>`]/g,"").trim(),h=o>=0?String(e[d][o]||"").trim():"";if(f){var g=H(p,h,c);r[f]=g}}return console.log("Dynamic map built:",Object.keys(r).length,"entries. Scale:",u,"/",c),r}function W(e,t,r,n){return String(e||"").replace(/<\s*((?:DV|DT|DD)[\s_\-]*\d+)[^>]*>/gi,function(e,a){var i=a.toUpperCase().replace(/[\s-]/g,"_");return void 0===t[i]?(n&&n.items.push({tag:i,paraId:r||"?"}),console.warn("Missing dynamic tag:",i,"in",r),h+e+g):t[i]})}function V(e){var t={};if(!e||0===e.length)return t;for(var r,n=e.length-1,a=e[0]?e[0].length:0,i=e[0]||[],o=0,l=1,s=0;s<i.length;s++){var c=String(i[s]||"").toLowerCase().trim();("table_id"===c||"tableid"===c||c.indexOf("table id")>=0||c.indexOf("table_id")>=0)&&(o=s),("para_id"===c||"paraid"===c||c.indexOf("para id")>=0||c.indexOf("para_id")>=0)&&(l=s)}r=Math.max(o,l)+1;for(var u=1;u<=n;){var d=String(e[u]&&e[u][o]||"").trim();if(d.toLowerCase().startsWith("table_")){for(var f=u,p=M(String(e[u]&&e[u][l]||"")),h=u,g=u+1;g<=n&&!String(e[g]&&e[g][o]||"").trim().toLowerCase().startsWith("table_");){for(var y=!1,m=r;m<a;m++)if(e[g]&&""!==String(e[g][m]||"").trim()){y=!0;break}y&&(h=g),g++}for(var b=0,w=f;w<=h;w++)for(var v=r;v<a;v++)e[w]&&""!==String(e[w][v]||"").trim()&&v-r+1>b&&(b=v-r+1);b<2&&(b=2);for(var T=[],x=f;x<=h;x++){for(var S=[],A=0;A<b;A++){var R=r+A;S.push(e[x]&&void 0!==e[x][R]?e[x][R]:"")}T.push(S)}var E={key:"T_"+d,title:d.replace(/_/g," "),headerRow:0,endRow:T.length-1,numCols:b,allRows:T};p&&!t[p]&&(t[p]=E),u=h+1}else u++}return t}function j(e,t){var r=document.getElementById("statusBox");r&&r.remove();var n=document.createElement("div");n.id="statusBox",n.style.cssText="padding:14px;background:"+({blue:"#3b82f6",green:"#10b981",red:"#ef4444"}[t]||"#6b7280")+";color:white;font-weight:bold;margin:10px 0;border-radius:8px;font-size:13px;position:sticky;top:0;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.15);",n.textContent=e,document.body.insertBefore(n,document.body.firstChild)}Office.onReady(function(e){if(e.host===Office.HostType.Excel){console.log("Office Add-in ready!");var t=document.getElementById("genBtn");t&&(t.disabled=!1)}}),window.generate=function(){return b.apply(this,arguments)}}(),function(){"use strict";new URL(r(60947),r.b)}()}();
-//# sourceMappingURL=taskpane.js.map
+/* global Excel, Office, console, document, docx, URL, fetch, FileReader, pdfjsLib, ExcelJS */
+/* eslint-disable no-undef */
+
+const BRAND_BLUE = "1E3A8A";
+const TABLE_HEADER_BG = "4B3293";
+const LIGHT_BLUE = "DBEAFE";
+const DARK_BLUE = "1E3A8A";
+const TEXT_DARK = "1F2937";
+const TEXT_GREY = "646464";
+const BORDER_LIGHT = "B4C8DC";
+
+Office.onReady((info) => {
+  if (info.host === Office.HostType.Excel) {
+    console.log("Office ready!");
+  }
+});
+
+async function downloadTemplate() {
+  try {
+    const response = await fetch("../../assets/Excel_Template.xlsx");
+    if (!response.ok) { console.log("Template file not found!"); return; }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Annual_Report_Template.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) { console.error("Download error:", err); }
+}
+
+let selectedPdfFile = null;
+
+function handleFileSelect() {
+  const input = document.getElementById("pdfFile");
+  const fileName = document.getElementById("fileName");
+  const btn = document.getElementById("processPdfBtn");
+  if (input.files && input.files[0]) {
+    selectedPdfFile = input.files[0];
+    if (fileName) {
+      fileName.style.display = "block";
+      fileName.innerText = "📄 " + selectedPdfFile.name + " (" + (selectedPdfFile.size / 1024 / 1024).toFixed(1) + " MB)";
+    }
+    if (btn) btn.disabled = false;
+  } else {
+    selectedPdfFile = null;
+    if (fileName) fileName.style.display = "none";
+    if (btn) btn.disabled = true;
+  }
+}
+
+function showPdfStatus(msg, type) {
+  const box = document.getElementById("pdfStatus");
+  if (!box) return;
+  box.style.display = "block";
+  box.className = type || "info";
+  box.innerText = msg;
+}
+
+async function processPDF() {
+  if (!selectedPdfFile) { showPdfStatus("Please select a PDF first", "error"); return; }
+  const fromPage = parseInt(document.getElementById("fromPage").value) || 1;
+  const toPage = parseInt(document.getElementById("toPage").value) || 50;
+  if (fromPage > toPage) { showPdfStatus("From page must be less than To page", "error"); return; }
+
+  const btn = document.getElementById("processPdfBtn");
+  btn.disabled = true;
+  btn.innerText = "⏳ Reading PDF...";
+
+  try {
+    showPdfStatus("Loading PDF...", "info");
+    const arrayBuffer = await selectedPdfFile.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    const endPage = Math.min(toPage, totalPages);
+
+    btn.innerText = "⏳ Extracting text...";
+    showPdfStatus("Extracting pages " + fromPage + " to " + endPage + "...", "info");
+
+    let allItems = [];
+    for (let i = fromPage; i <= endPage; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const viewport = page.getViewport({ scale: 1 });
+      const pageWidth = viewport.width;
+
+      const lines = {};
+      for (const item of content.items) {
+        const y = Math.round(item.transform[5]);
+        const x = item.transform[4];
+        const col = x < pageWidth / 2 ? "L" : "R";
+        const key = y + "_" + col;
+        if (!lines[key]) lines[key] = { text: "", fontSize: 0, x: x, y: y, col: col };
+        lines[key].text += item.str + " ";
+        lines[key].fontSize = Math.max(lines[key].fontSize, item.height);
+      }
+
+      const leftKeys = Object.keys(lines).filter(k => k.endsWith("_L")).sort((a, b) => lines[b].y - lines[a].y);
+      const rightKeys = Object.keys(lines).filter(k => k.endsWith("_R")).sort((a, b) => lines[b].y - lines[a].y);
+
+      for (const k of leftKeys) {
+        const line = lines[k];
+        if (line.text.trim().length > 1) allItems.push({ text: line.text.trim(), fontSize: line.fontSize, page: i });
+      }
+      for (const k of rightKeys) {
+        const line = lines[k];
+        if (line.text.trim().length > 1) allItems.push({ text: line.text.trim(), fontSize: line.fontSize, page: i });
+      }
+    }
+
+    btn.innerText = "⏳ Analyzing structure...";
+    showPdfStatus("Analyzing paragraphs and headings...", "info");
+
+    const paragraphs = extractParagraphs(allItems);
+
+    if (paragraphs.length === 0) {
+      showPdfStatus("No content found. Try a different page range.", "error");
+      btn.disabled = false;
+      btn.innerText = "🚀 Process & Fill Excel";
+      return;
+    }
+
+    btn.innerText = "⏳ Building Excel...";
+    showPdfStatus("Creating Excel with " + paragraphs.length + " paragraphs...", "info");
+
+    await buildExcelFromParagraphs(paragraphs);
+
+    showPdfStatus("✓ Done! " + paragraphs.length + " paragraphs extracted.", "success");
+    btn.disabled = false;
+    btn.innerText = "🚀 Process & Fill Excel";
+  } catch (err) {
+    console.error("PDF error:", err);
+    showPdfStatus("Error: " + err.message, "error");
+    btn.disabled = false;
+    btn.innerText = "🚀 Process & Fill Excel";
+  }
+}
+
+function classifyLine(text, fontSize, bodyFontSize) {
+  if (/^\d+\.\s+[A-Z][A-Z\s]+$/.test(text) && text.length < 150) return "heading_1";
+  if (/^\d+\.\s*$/.test(text)) return "heading_1";
+  if (/^\d+\.\s+[A-Z]/.test(text) && text.length < 150) return "heading_1";
+  if (/^\([a-z]\)\s+[A-Z]/.test(text) && text.length < 200) return "heading_2";
+  if (/^\([a-z]\)\s*$/.test(text)) return "heading_2";
+  if (/^\(i{1,4}v?\)\s+[A-Z]/.test(text) && text.length < 200) return "heading_3";
+  if (/^\(i{1,4}v?\)\s*$/.test(text)) return "heading_3";
+  if (text === text.toUpperCase() && text.length > 3 && text.length < 80) {
+    const letters = text.replace(/[^A-Z]/g, "");
+    if (letters.length > 3) return "heading_1";
+  }
+  if (fontSize > bodyFontSize * 1.3 && text.length < 150) return "heading_2";
+  if (text.startsWith("•") || text.startsWith("●") || /^[\-\*]\s/.test(text)) return "bullet";
+  return "body";
+}
+
+function extractParagraphs(items) {
+  if (items.length === 0) return [];
+  const sizeFreq = {};
+  for (const it of items) {
+    const r = Math.round(it.fontSize * 10) / 10;
+    sizeFreq[r] = (sizeFreq[r] || 0) + 1;
+  }
+  let bodyFontSize = 10;
+  let maxFreq = 0;
+  for (const s in sizeFreq) {
+    if (sizeFreq[s] > maxFreq) { maxFreq = sizeFreq[s]; bodyFontSize = parseFloat(s); }
+  }
+  const clean = [];
+  for (const it of items) {
+    const t = it.text.trim();
+    if (t.length < 2) continue;
+    if (/^\d+$/.test(t)) continue;
+    if (/^Page \d+/i.test(t)) continue;
+    if (t === "BLUE STAR LIMITED") continue;
+    if (/^\(CIN\s*:/.test(t)) continue;
+    if (t === "Financial Statements" || t === "Consolidated") continue;
+    if (t === "Notes to Consolidated Financial Statements") continue;
+    if (/^for the year ended/i.test(t)) continue;
+    clean.push(it);
+  }
+  const merged = [];
+  let prev = null;
+  for (let i = 0; i < clean.length; i++) {
+    const it = clean[i];
+    const text = it.text.trim();
+    const type = classifyLine(text, it.fontSize, bodyFontSize);
+    if (prev && prev.type.startsWith("heading_")) {
+      const isAllCaps = text === text.toUpperCase() && /[A-Z]/.test(text);
+      const isShort = text.length < 80;
+      const noNumbering = !/^\d+\./.test(text) && !/^\([a-z]\)/.test(text) && !/^\(i{1,4}v?\)/.test(text);
+      if (prev.text === prev.text.toUpperCase() && isAllCaps && isShort && noNumbering && prev.type === "heading_1") {
+        prev.text = prev.text + " " + text;
+        prev.fontSize = Math.max(prev.fontSize, it.fontSize);
+        continue;
+      }
+      if (prev.text && !/[.:;?!]$/.test(prev.text) && it.fontSize >= bodyFontSize * 1.2 && isShort && noNumbering) {
+        prev.text = prev.text + " " + text;
+        prev.fontSize = Math.max(prev.fontSize, it.fontSize);
+        continue;
+      }
+    }
+    const newItem = { text: text, type: type, fontSize: it.fontSize };
+    merged.push(newItem);
+    prev = newItem;
+  }
+  const paragraphs = [];
+  const stack = ["", "", "", "", ""];
+  let currentBody = "";
+  function flushP() {
+    if (currentBody.trim().length < 30) { currentBody = ""; return; }
+    paragraphs.push({
+      level1: stack[0] || "", level2: stack[1] || "", level3: stack[2] || "",
+      level4: stack[3] || "", level5: stack[4] || "",
+      level6: currentBody.trim().replace(/\s+/g, " ")
+    });
+    currentBody = "";
+  }
+  for (let i = 0; i < merged.length; i++) {
+    const it = merged[i];
+    if (it.type === "heading_1" || it.type === "heading_2") {
+      flushP();
+      const level = parseInt(it.type.split("_")[1]);
+      stack[level - 1] = it.text;
+      for (let l = level; l < 5; l++) stack[l] = "";
+      currentBody = "";
+    } else if (it.type === "heading_3") {
+      currentBody += " " + it.text;
+    } else if (it.type === "bullet") {
+      currentBody += " • " + it.text;
+    } else {
+      currentBody += " " + it.text;
+    }
+  }
+  flushP();
+  return paragraphs;
+}
+
+function cleanHeading(text) {
+  if (!text) return "";
+  let t = text.trim();
+  t = t.replace(/^\d+\.\s*/, "");
+  t = t.replace(/^\([a-z]\)\s*/i, "");
+  t = t.replace(/^\(i{1,4}v?x?\)\s*/i, "");
+  t = t.replace(/^[•●\-\*]\s*/, "");
+  return t.trim();
+}
+
+async function buildExcelFromParagraphs(paragraphs) {
+  const response = await fetch("../../assets/Excel_Template.xlsx");
+  if (!response.ok) throw new Error("Template file not found in assets folder");
+  const templateBuffer = await response.arrayBuffer();
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(templateBuffer);
+
+  let paraSheet = workbook.getWorksheet("Para_ID");
+  if (!paraSheet) {
+    for (const ws of workbook.worksheets) {
+      if (ws.name.toLowerCase().includes("para")) { paraSheet = ws; break; }
+    }
+  }
+  if (!paraSheet) throw new Error("Para_ID sheet not found");
+
+  const lastRow = paraSheet.actualRowCount;
+  for (let r = lastRow; r >= 2; r--) paraSheet.spliceRows(r, 1);
+
+  let rowNum = 2;
+  let paraCounter = 1;
+  for (const p of paragraphs) {
+    if (!p.level6 || p.level6.length < 30) continue;
+    const numCount = (p.level6.match(/\d/g) || []).length;
+    if (numCount / p.level6.length > 0.4) continue;
+    const paraId = "Para_" + String(paraCounter).padStart(2, "0");
+    paraCounter++;
+    const cL1 = cleanHeading(p.level1);
+    const cL2 = cleanHeading(p.level2);
+    const cL3 = cleanHeading(p.level3);
+    const cL4 = cleanHeading(p.level4);
+    const cL5 = cleanHeading(p.level5);
+
+    const row = paraSheet.getRow(rowNum);
+    row.getCell(1).value = paraId;
+    let cascade = cL1 || "";
+    row.getCell(2).value = cL1 || "";
+    if (cL2) cascade = cL2;
+    row.getCell(3).value = cL2 || cascade;
+    if (cL3) cascade = cL3;
+    row.getCell(4).value = cL3 || cascade;
+    if (cL4) cascade = cL4;
+    row.getCell(5).value = cL4 || cascade;
+    if (cL5) cascade = cL5;
+    row.getCell(6).value = cL5 || cascade;
+    row.getCell(7).value = p.level6;
+    row.getCell(8).value = "Y";
+    row.getCell(9).value = "Y";
+    row.getCell(10).value = "Y";
+    row.commit();
+    rowNum++;
+  }
+
+  const outBuffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([outBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Annual_Report_Filled_" + Date.now() + ".xlsx";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function generate() {
+  const btn = document.getElementById("genBtn");
+  btn.disabled = true;
+  btn.querySelector("span:last-child").innerText = "Generating...";
+
+  try {
+    let COMPANY_NAME = "Company Name";
+    let COMPANY_CIN = "";
+    let HEADER_RIGHT_TOP = "Financial Statements";
+    let HEADER_RIGHT_BOT = "Consolidated";
+    let DOC_TITLE = "Notes to Consolidated Financial Statements";
+    let DOC_SUBTITLE = "for the year ended March 31, 2025";
+    let YEAR = "";
+    let SCALE = "Crore";
+    let LOGO_URL = "";
+    let selectedVersion = "V1";
+    let versionDetail = "-";
+    let paragraphs = null, dynamics = null, tables = null;
+    let workbookName = "Workbook.xlsx";
+
+    await Excel.run(async (ctx) => {
+      const wb = ctx.workbook;
+      const allSheets = wb.worksheets;
+      allSheets.load("items/name");
+      await ctx.sync();
+      const names = allSheets.items.map(s => s.name);
+      console.log("Sheets:", names);
+
+      function findSheet(keywords) {
+        for (const k of keywords) {
+          const m = names.find(n => n.toLowerCase().includes(k.toLowerCase()));
+          if (m) return wb.worksheets.getItem(m);
+        }
+        return null;
+      }
+
+      const paraSheet = findSheet(["Para_ID", "Para"]);
+      const dynSheet = findSheet(["Dynamic Values", "Dynamic"]);
+      const tabSheet = findSheet(["Tables"]);
+      const landingSheet = findSheet(["Landing"]);
+      const vmSheet = findSheet(["Version"]);
+
+      const paraRange = paraSheet ? paraSheet.getUsedRange() : null;
+      const dynRange = dynSheet ? dynSheet.getUsedRange() : null;
+      const tabRange = tabSheet ? tabSheet.getUsedRange() : null;
+      const vmRange = vmSheet ? vmSheet.getUsedRange() : null;
+      const verCell = landingSheet ? landingSheet.getRange("C2") : null;
+
+      wb.load("name");
+      if (paraRange) paraRange.load("values");
+      if (dynRange) dynRange.load("values");
+      if (tabRange) tabRange.load("values");
+      if (vmRange) vmRange.load("values");
+      if (verCell) verCell.load("values");
+      await ctx.sync();
+
+      workbookName = wb.name || "Workbook.xlsx";
+      paragraphs = paraRange ? paraRange.values : null;
+      dynamics = dynRange ? dynRange.values : null;
+      tables = tabRange ? tabRange.values : null;
+      if (verCell) selectedVersion = String(verCell.values[0][0] || "V1").trim().toUpperCase();
+
+      if (vmRange) {
+        const vmRows = vmRange.values;
+        for (let i = 1; i < vmRows.length; i++) {
+          if (vmRows[i] && String(vmRows[i][0] || "").trim().toUpperCase() === selectedVersion) {
+            const r = vmRows[i];
+            versionDetail = String(r[1] || "-").trim();
+            YEAR = String(r[2] || "").trim();
+            LOGO_URL = String(r[5] || "").trim();
+            SCALE = String(r[6] || "Crore").trim();
+            COMPANY_NAME = String(r[7] || COMPANY_NAME).trim();
+            COMPANY_CIN = String(r[8] || "").trim();
+            HEADER_RIGHT_TOP = String(r[9] || HEADER_RIGHT_TOP).trim();
+            HEADER_RIGHT_BOT = String(r[10] || HEADER_RIGHT_BOT).trim();
+            DOC_TITLE = String(r[11] || DOC_TITLE).trim();
+            DOC_SUBTITLE = String(r[12] || DOC_SUBTITLE).trim();
+            break;
+          }
+        }
+      }
+    });
+
+    console.log("Version:", selectedVersion);
+    console.log("Scale:", SCALE);
+
+    let logoBase64 = null;
+    let logoSource = "Not available";
+    if (LOGO_URL && (LOGO_URL.startsWith("http://") || LOGO_URL.startsWith("https://"))) {
+      logoBase64 = await fetchImage(LOGO_URL);
+      if (logoBase64) logoSource = "URL from Version Maintenance";
+    }
+
+    const B = { COMPANY_NAME, COMPANY_CIN, HEADER_RIGHT_TOP, HEADER_RIGHT_BOT, DOC_TITLE, DOC_SUBTITLE };
+    const dynMap = buildDynMap(dynamics, SCALE);
+    const tableMap = buildTableMap(tables);
+    console.log("Dynamic Map:", dynMap);
+    const userName = (Office.context && Office.context.displayName) || "User";
+
+    // Track missing DVs across the whole document
+    const missingDVs = new Set();
+
+    const meta = {
+      version: selectedVersion, versionDetail, generatedBy: userName,
+      generatedOn: new Date(), workbookName, logoBase64, logoSource,
+      year: YEAR, scale: SCALE, missingDVs: missingDVs
+    };
+
+    const blob = await buildDoc(paragraphs, dynMap, tableMap, B, selectedVersion, meta);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Annual_Report_" + selectedVersion + "_" + Date.now() + ".docx";
+    a.click();
+    URL.revokeObjectURL(url);
+
+    btn.disabled = false;
+    btn.querySelector("span:last-child").innerText = "Generate Word Document";
+    console.log("Missing DVs:", Array.from(missingDVs));
+  } catch (err) {
+    console.error("Generate error:", err);
+    btn.disabled = false;
+    btn.querySelector("span:last-child").innerText = "Generate Word Document";
+  }
+}
+
+async function fetchImage(url) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const blob = await r.blob();
+    return await new Promise((res, rej) => {
+      const rd = new FileReader();
+      rd.onloadend = () => { const x = rd.result; const i = x.indexOf(","); res(i >= 0 ? x.substring(i + 1) : x); };
+      rd.onerror = rej;
+      rd.readAsDataURL(blob);
+    });
+  } catch (e) { return null; }
+}
+
+function findColIdx(h, k) {
+  for (let i = 0; i < h.length; i++) {
+    if (String(h[i] || "").toLowerCase().indexOf(k.toLowerCase()) >= 0) return i;
+  }
+  return -1;
+}
+
+function findExactCol(h, n) {
+  const t = String(n).trim().toUpperCase();
+  for (let i = 0; i < h.length; i++) {
+    if (String(h[i] || "").trim().toUpperCase() === t) return i;
+  }
+  return -1;
+}
+
+function cleanStr(s) {
+  return String(s || "").replace(/\r/g, " ").replace(/\n/g, " ").replace(/\t/g, " ").replace(/`/g, "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeId(s) {
+  const m = /Para[_\s]*0*(\d+)/i.exec(String(s || ""));
+  if (!m) return String(s || "").trim();
+  return "Para_" + String(m[1]).padStart(2, "0");
+}
+
+function getScaleDivisor(scaleStr) {
+  const s = String(scaleStr || "").toLowerCase().trim();
+  if (s.indexOf("crore") >= 0) return 10000000;
+  if (s.indexOf("lakh") >= 0 || s.indexOf("lac") >= 0) return 100000;
+  if (s.indexOf("million") >= 0) return 1000000;
+  if (s.indexOf("thousand") >= 0) return 1000;
+  return 1;
+}
+
+function formatScaledNumber(num, divisor) {
+  const scaled = num / divisor;
+  if (Math.abs(scaled - Math.round(scaled)) < 0.001) {
+    return Math.round(scaled).toLocaleString("en-IN");
+  }
+  return scaled.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function buildDynMap(rows, scaleStr) {
+  const map = {};
+  if (!rows || rows.length < 2) return map;
+  const divisor = getScaleDivisor(scaleStr);
+
+  for (let r = 1; r < rows.length; r++) {
+    const id = String(rows[r][0] || "").trim().toUpperCase().replace(/[\s\-]/g, "_");
+    if (!id) continue;
+
+    const rawValue = rows[r][1];
+    const type = String(rows[r][3] || "").trim().toLowerCase();
+    let finalValue;
+
+    if (type === "value" && typeof rawValue === "number" && !isNaN(rawValue)) {
+      finalValue = formatScaledNumber(rawValue, divisor);
+    } else {
+      if (typeof rawValue === "number") {
+        finalValue = String(rawValue);
+      } else {
+        finalValue = String(rawValue || "");
+      }
+    }
+
+    map[id] = finalValue.replace(/[<>`]/g, "").trim();
+  }
+  return map;
+}
+
+// ============================================================
+// Splits text into segments: { type: "text"|"missing", text: "..." }
+// Used for highlighting missing DVs in red/yellow
+// ============================================================
+function replaceDynWithMissing(text, map, missingSet) {
+  const segments = [];
+  const str = String(text || "");
+  const re = /<\s*((?:DV|DT|DD)[\s_\-]*\d+)[^>]*>/gi;
+  let lastIdx = 0;
+  let m;
+  while ((m = re.exec(str)) !== null) {
+    if (m.index > lastIdx) {
+      segments.push({ type: "text", text: str.substring(lastIdx, m.index) });
+    }
+    const id = m[1].toUpperCase().replace(/[\s\-]/g, "_");
+    if (map[id] !== undefined && map[id] !== "") {
+      segments.push({ type: "text", text: map[id] });
+    } else {
+      missingSet.add(id);
+      segments.push({ type: "missing", text: "[MISSING: " + id + "]" });
+    }
+    lastIdx = m.index + m[0].length;
+  }
+  if (lastIdx < str.length) {
+    segments.push({ type: "text", text: str.substring(lastIdx) });
+  }
+  return segments;
+}
+
+function buildTableMap(rows) {
+  const map = {};
+  if (!rows || rows.length === 0) return map;
+  const lr = rows.length - 1;
+  const lc = rows[0] ? rows[0].length : 0;
+  let r = 1;
+  while (r <= lr) {
+    const tableId = String((rows[r] && rows[r][0]) || "").trim();
+    const paraId = String((rows[r] && rows[r][1]) || "").trim();
+    if (tableId.toLowerCase().startsWith("table_") && paraId) {
+      const headerRow = r;
+      let endRow = r + 1;
+      while (endRow <= lr) {
+        const nextTableId = String((rows[endRow] && rows[endRow][0]) || "").trim();
+        if (nextTableId.toLowerCase().startsWith("table_")) break;
+        let allEmpty = true;
+        for (let c = 2; c < lc; c++) {
+          if (String((rows[endRow] && rows[endRow][c]) || "").trim() !== "") { allEmpty = false; break; }
+        }
+        if (allEmpty) {
+          if (endRow + 1 > lr) break;
+          const nx = String((rows[endRow + 1] && rows[endRow + 1][0]) || "").trim();
+          if (nx === "" || nx.toLowerCase().startsWith("table_")) break;
+        }
+        endRow++;
+      }
+      while (endRow > headerRow) {
+        let allEmpty = true;
+        for (let c = 2; c < lc; c++) {
+          if (String((rows[endRow] && rows[endRow][c]) || "").trim() !== "") { allEmpty = false; break; }
+        }
+        if (!allEmpty) break;
+        endRow--;
+      }
+      let nc = 0;
+      for (let scanRow = headerRow; scanRow <= endRow; scanRow++) {
+        for (let c = 2; c < lc; c++) {
+          if (String((rows[scanRow] && rows[scanRow][c]) || "").trim() !== "") {
+            if (c - 2 + 1 > nc) nc = c - 2 + 1;
+          }
+        }
+      }
+      if (nc < 2) nc = 2;
+      const pidMatch = /Para[_\s]*0*(\d+)/i.exec(paraId);
+      if (pidMatch) {
+        const pid = "Para_" + String(pidMatch[1]).padStart(2, "0");
+        if (!map[pid]) {
+          map[pid] = { key: "T_" + r, title: tableId, headerRow: headerRow, endRow: endRow, numCols: nc, allRows: rows, colOffset: 2 };
+        }
+      }
+      r = endRow + 1;
+    } else { r++; }
+  }
+  return map;
+}
+
+async function buildDoc(paraRows, dynMap, tableMap, B, version, meta) {
+  const d = docx;
+  const usedT = {}, gPH = {};
+  let tablesInc = 0;
+  const pageHeader = makeHeader(d, B, meta.logoBase64);
+
+  const titleSec = [
+    new d.Paragraph({ children: [new d.TextRun({ text: B.DOC_TITLE, bold: true, color: BRAND_BLUE, font: "Arial", size: 52 })], spacing: { before: 200, after: 80 } }),
+    new d.Paragraph({ children: [new d.TextRun({ text: B.DOC_SUBTITLE, color: TEXT_GREY, font: "Arial", size: 22 })], spacing: { after: 300 } })
+  ];
+
+  const hr = paraRows[0] || [];
+  const cP = findColIdx(hr, "Para");
+  const cL6 = findColIdx(hr, "Level 6");
+  const cL = [findColIdx(hr, "Level 1"), findColIdx(hr, "Level 2"), findColIdx(hr, "Level 3"), findColIdx(hr, "Level 4"), findColIdx(hr, "Level 5")];
+  const cV = findExactCol(hr, version);
+
+  const sections = [];
+  sections.push({
+    properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, type: d.SectionType.CONTINUOUS },
+    headers: { default: pageHeader }, children: titleSec
+  });
+
+  let cur = [];
+  function flush() {
+    if (cur.length === 0) return;
+    sections.push({
+      properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, column: { count: 2, space: 432 }, type: d.SectionType.CONTINUOUS },
+      headers: { default: pageHeader }, children: cur
+    });
+    cur = [];
+  }
+
+  let pc = 0, sc = 0;
+  const nf = numberer();
+  const stk = ["", "", "", "", ""];
+
+  for (let i = 1; i < paraRows.length; i++) {
+    const row = paraRows[i];
+    let emp = true;
+    for (let c = 0; c < hr.length; c++) if (String(row[c] || "").trim() !== "") { emp = false; break; }
+    if (emp) continue;
+    if (cV >= 0 && String(row[cV] || "").trim().toUpperCase() !== "Y") { sc++; continue; }
+    pc++;
+    const pid = normalizeId(String(row[cP] || ""));
+    const rt = [];
+    for (let l = 1; l <= 5; l++) { const ci = cL[l - 1]; rt.push(ci < 0 ? "" : cleanStr(String(row[ci] || ""))); }
+    let hf = -1;
+    for (let l = 0; l < 5; l++) if (rt[l]) { hf = l; break; }
+    const et = [];
+    if (hf === -1) for (let l = 0; l < 5; l++) et.push("");
+    else {
+      for (let l = 0; l < hf; l++) et.push(stk[l]);
+      et.push(rt[hf]); stk[hf] = rt[hf];
+      for (let l = hf + 1; l < 5; l++) stk[l] = "";
+      for (let l = hf + 1; l < 5; l++) { if (rt[l]) { et.push(rt[l]); stk[l] = rt[l]; } else et.push(""); }
+    }
+    const seen = {}, ft = [];
+    for (let l = 0; l < 5; l++) {
+      const t = et[l];
+      if (!t) { ft.push(null); continue; }
+      if (seen[t]) ft.push(null); else { seen[t] = true; ft.push(t); }
+    }
+    for (let l = 1; l <= 5; l++) {
+      const ht = ft[l - 1];
+      if (!ht || gPH[ht]) continue;
+      gPH[ht] = true;
+      const res = nf.assign(ht, l);
+      cur.push(makeHeading(d, res.number + " " + ht, l));
+    }
+    if (cL6 >= 0) {
+      let body = cleanStr(String(row[cL6] || ""));
+      if (body) {
+        const segments = replaceDynWithMissing(body, dynMap, meta.missingDVs);
+        cur.push(makeBodyWithSegments(d, segments));
+      }
+    }
+    if (tableMap[pid] && !usedT[tableMap[pid].key]) {
+      usedT[tableMap[pid].key] = true;
+      tablesInc++;
+      flush();
+      const tc = [];
+      tc.push(new d.Paragraph({ children: [new d.TextRun({ text: "" })], spacing: { before: 0, after: 0 }, keepNext: true, keepLines: true }));
+      tc.push(makeTable(d, tableMap[pid]));
+      tc.push(new d.Paragraph({ children: [new d.TextRun({ text: "" })], spacing: { after: 200 } }));
+      sections.push({
+        properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, type: d.SectionType.CONTINUOUS },
+        headers: { default: pageHeader }, children: tc
+      });
+    }
+  }
+  flush();
+
+  sections.push({
+    properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1800, right: 1080, bottom: 1080, left: 1080 } }, type: d.SectionType.NEXT_PAGE },
+    headers: { default: pageHeader }, children: appendix(d, B, meta, pc, sc, tablesInc)
+  });
+
+  const doc = new d.Document({ styles: { default: { document: { run: { font: "Arial", size: 20 } } } }, sections: sections });
+  return await d.Packer.toBlob(doc);
+}
+
+function numberer() {
+  const c = [0, 0, 0, 0, 0];
+  const sn = {};
+  function tl(n) { let r = "", x = n; while (x > 0) { const m = (x - 1) % 26; r = String.fromCharCode(97 + m) + r; x = Math.floor((x - 1) / 26); } return r; }
+  function tr(n) { const m = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"]; return n <= 20 ? m[n] : String(n); }
+  function assign(t, l) {
+    const li = l - 1, k = c.slice(0, li).join(".") + "|" + t;
+    if (sn[k]) return { number: sn[k] };
+    c[li]++;
+    for (let i = li + 1; i < 5; i++) c[i] = 0;
+    let n = "";
+    if (l === 1) n = c[0] + ".";
+    else if (l === 2) n = c[0] + "." + c[1];
+    else if (l === 3) n = c[0] + "." + c[1] + "." + c[2];
+    else if (l === 4) n = "(" + tl(c[3]) + ")";
+    else if (l === 5) n = "(" + tr(c[4]) + ")";
+    sn[k] = n;
+    return { number: n };
+  }
+  return { assign };
+}
+
+function appendix(d, B, m, pc, sc, ti) {
+  const ch = [];
+  ch.push(new d.Paragraph({ children: [new d.TextRun({ text: "APPENDIX", bold: true, color: BRAND_BLUE, font: "Arial", size: 48 })], spacing: { before: 240, after: 80 } }));
+  ch.push(new d.Paragraph({ children: [new d.TextRun({ text: "Document Generation Information", color: TEXT_GREY, font: "Arial", size: 22, italics: true })], spacing: { after: 320 } }));
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dt = m.generatedOn;
+  let h = dt.getHours();
+  const mn = String(dt.getMinutes()).padStart(2, "0");
+  const ap = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  const ds = String(dt.getDate()).padStart(2, "0") + " " + months[dt.getMonth()] + " " + dt.getFullYear() + ", " + h + ":" + mn + " " + ap;
+
+  const missingArr = m.missingDVs ? Array.from(m.missingDVs) : [];
+  const missingCount = missingArr.length;
+  const missingList = missingCount > 0 ? missingArr.join(", ") : "None";
+
+  ch.push(kvTable(d, [
+    ["Document Title", B.DOC_TITLE], ["Subtitle", B.DOC_SUBTITLE],
+    ["Company", B.COMPANY_NAME], ["CIN", B.COMPANY_CIN],
+    ["Version", m.version], ["Version Detail", m.versionDetail],
+    ["Year", m.year || "-"], ["Scale", m.scale || "-"],
+    ["Generated By", m.generatedBy], ["Generated On", ds],
+    ["Source File", m.workbookName], ["Logo Source", m.logoSource],
+    ["Paragraphs Included", String(pc)], ["Paragraphs Skipped", String(sc)],
+    ["Tables Included", String(ti)],
+    ["Missing Dynamic Values (Count)", String(missingCount)],
+    ["Missing Dynamic Values (List)", missingList]
+  ]));
+  return ch;
+}
+
+function kvTable(d, rows) {
+  const b = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
+  const bs = { top: b, bottom: b, left: b, right: b };
+  const tr = rows.map((kv, i) => {
+    const bg = i % 2 === 1 ? "F4F7FC" : "FFFFFF";
+    // Highlight Missing DV rows in light red
+    const isMissingRow = String(kv[0]).indexOf("Missing Dynamic Values") >= 0 && kv[1] !== "0" && kv[1] !== "None";
+    const rowBg = isMissingRow ? "FEE2E2" : bg;
+    const labelColor = isMissingRow ? "991B1B" : DARK_BLUE;
+    return new d.TableRow({ cantSplit: true, children: [
+      new d.TableCell({ width: { size: 3400, type: d.WidthType.DXA }, borders: bs, shading: { type: d.ShadingType.CLEAR, fill: rowBg }, margins: { top: 100, bottom: 100, left: 140, right: 100 }, children: [new d.Paragraph({ children: [new d.TextRun({ text: kv[0], bold: true, color: labelColor, font: "Arial", size: 18 })] })] }),
+      new d.TableCell({ width: { size: 5960, type: d.WidthType.DXA }, borders: bs, shading: { type: d.ShadingType.CLEAR, fill: rowBg }, margins: { top: 100, bottom: 100, left: 140, right: 100 }, children: [new d.Paragraph({ children: [new d.TextRun({ text: kv[1], color: isMissingRow ? "991B1B" : TEXT_DARK, font: "Arial", size: 18, bold: isMissingRow })] })] })
+    ]});
+  });
+  return new d.Table({ width: { size: 9360, type: d.WidthType.DXA }, columnWidths: [3400, 5960], rows: tr });
+}
+
+function makeHeader(d, B, logoBase64) {
+  const headerChildren = [];
+  if (logoBase64) {
+    try {
+      const bin = atob(logoBase64);
+      const bt = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bt[i] = bin.charCodeAt(i);
+      headerChildren.push(new d.Paragraph({
+        alignment: d.AlignmentType.RIGHT,
+        children: [new d.ImageRun({ data: bt, transformation: { width: 140, height: 90 } })],
+        spacing: { before: 0, after: 80 }
+      }));
+    } catch (e) { console.warn("Logo error:", e); }
+  }
+  const nb = { top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.NONE }, left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE } };
+  headerChildren.push(new d.Table({
+    width: { size: 9360, type: d.WidthType.DXA },
+    columnWidths: [4680, 4680],
+    borders: {
+      top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.SINGLE, size: 6, color: BORDER_LIGHT },
+      left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE },
+      insideHorizontal: { style: d.BorderStyle.NONE }, insideVertical: { style: d.BorderStyle.NONE }
+    },
+    rows: [new d.TableRow({
+      children: [
+        new d.TableCell({
+          width: { size: 4680, type: d.WidthType.DXA }, borders: nb, verticalAlign: d.VerticalAlign.CENTER,
+          children: [
+            new d.Paragraph({ children: [new d.TextRun({ text: B.COMPANY_NAME, bold: true, color: BRAND_BLUE, font: "Arial", size: 22 })] }),
+            new d.Paragraph({ children: [new d.TextRun({ text: B.COMPANY_CIN, color: TEXT_GREY, font: "Arial", size: 16 })] })
+          ]
+        }),
+        new d.TableCell({
+          width: { size: 4680, type: d.WidthType.DXA }, borders: nb, verticalAlign: d.VerticalAlign.CENTER,
+          children: [
+            new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_TOP, bold: true, color: BRAND_BLUE, font: "Arial", size: 22 })] }),
+            new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [new d.TextRun({ text: B.HEADER_RIGHT_BOT, color: TEXT_GREY, font: "Arial", size: 16 })] })
+          ]
+        })
+      ]
+    })]
+  }));
+  return new d.Header({ children: headerChildren });
+}
+
+function makeHeading(d, t, l) {
+  let s, b, it, c, il;
+  switch (l) {
+    case 1: s = 26; b = true; it = false; c = BRAND_BLUE; il = 0; break;
+    case 2: s = 22; b = true; it = false; c = TEXT_DARK; il = 0; break;
+    case 3: s = 21; b = true; it = true; c = TEXT_DARK; il = 100; break;
+    case 4: s = 20; b = true; it = true; c = "404040"; il = 200; break;
+    default: s = 20; b = true; it = true; c = "555555"; il = 300;
+  }
+  return new d.Paragraph({ children: [new d.TextRun({ text: t, bold: b, italics: it, color: c, font: "Arial", size: s })], spacing: { before: l === 1 ? 280 : 200, after: l === 1 ? 140 : 100 }, indent: { left: il }, keepNext: true });
+}
+
+function makeBody(d, t) {
+  return new d.Paragraph({ alignment: d.AlignmentType.JUSTIFIED, children: [new d.TextRun({ text: t, color: TEXT_DARK, font: "Arial", size: 20 })], spacing: { after: 120 } });
+}
+
+// ============================================================
+// NEW: makeBodyWithSegments — renders text with highlighted missing DVs
+// ============================================================
+function makeBodyWithSegments(d, segments) {
+  const runs = segments.map(seg => {
+    if (seg.type === "missing") {
+      return new d.TextRun({
+        text: seg.text,
+        color: "CC0000",
+        bold: true,
+        font: "Arial",
+        size: 20,
+        highlight: "yellow"
+      });
+    }
+    return new d.TextRun({ text: seg.text, color: TEXT_DARK, font: "Arial", size: 20 });
+  });
+  return new d.Paragraph({
+    alignment: d.AlignmentType.JUSTIFIED,
+    children: runs,
+    spacing: { after: 120 }
+  });
+}
+
+function makeTitleBar(d, t) {
+  return new d.Paragraph({ children: [new d.TextRun({ text: t, bold: true, color: "FFFFFF", font: "Arial", size: 20 })], shading: { type: d.ShadingType.CLEAR, fill: TABLE_HEADER_BG }, spacing: { before: 160, after: 0 }, indent: { left: 80 }, keepNext: true, keepLines: true });
+}
+
+function makeTable(d, info) {
+  const nr = info.endRow - info.headerRow + 1;
+  const nc = info.numCols;
+  const colOffset = info.colOffset || 0;
+  if (nr < 1 || nc < 1) return new d.Paragraph({ children: [new d.TextRun({ text: "" })] });
+  const tw = 9360;
+  const fw = Math.floor(tw * 0.32);
+  const ow = nc > 1 ? Math.floor((tw - fw) / (nc - 1)) : (tw - fw);
+  const cw = [fw];
+  for (let c = 1; c < nc; c++) cw.push(ow);
+  const b = { style: d.BorderStyle.SINGLE, size: 4, color: "C8D2E6" };
+  const bs = { top: b, bottom: b, left: b, right: b };
+  const rows = [];
+  for (let r = 0; r < nr; r++) {
+    const sr = info.headerRow + r;
+    const rd = info.allRows[sr] || [];
+    const ih = r === 0;
+    const fc = String(rd[colOffset] || "").trim();
+    let hl = false, sh = false;
+    if (!ih) {
+      const f = fc.toLowerCase();
+      if (f.startsWith("as at") || f.startsWith("at march") || f.startsWith("balance as") || f.startsWith("total")) hl = true;
+      let e = 0;
+      for (let c = 1; c < nc; c++) if (!rd[colOffset + c] || String(rd[colOffset + c]).trim() === "") e++;
+      if (e === nc - 1 && fc) sh = true;
+    }
+    const cells = [];
+    for (let c = 0; c < nc; c++) {
+      const actualCol = colOffset + c;
+      const ct = String(rd[actualCol] != null ? rd[actualCol] : "").trim();
+      let bg = "FFFFFF", tc = TEXT_DARK, fs = 14, iB = false, iI = false;
+      let al = c === 0 ? d.AlignmentType.LEFT : d.AlignmentType.RIGHT;
+      if (ih) { bg = TABLE_HEADER_BG; tc = "FFFFFF"; iB = true; al = d.AlignmentType.CENTER; }
+      else if (sh) { bg = LIGHT_BLUE; tc = DARK_BLUE; iB = true; iI = true; al = d.AlignmentType.LEFT; }
+      else if (hl) { bg = LIGHT_BLUE; tc = DARK_BLUE; iB = true; }
+      cells.push(new d.TableCell({
+        width: { size: c === 0 ? fw : ow, type: d.WidthType.DXA },
+        borders: bs, shading: { type: d.ShadingType.CLEAR, fill: bg },
+        margins: { top: 60, bottom: 60, left: 80, right: 80 },
+        children: [new d.Paragraph({ alignment: al, children: [new d.TextRun({ text: ct, bold: iB, italics: iI, color: tc, font: "Arial", size: fs })] })]
+      }));
+    }
+    rows.push(new d.TableRow({ children: cells, cantSplit: true }));
+  }
+  return new d.Table({ width: { size: tw, type: d.WidthType.DXA }, columnWidths: cw, rows: rows });
+}
+
+window.generate = generate;
+window.downloadTemplate = downloadTemplate;
+window.handleFileSelect = handleFileSelect;
+window.processPDF = processPDF;
