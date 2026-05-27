@@ -1043,3 +1043,18 @@ window.generate = generate;
 window.downloadTemplate = downloadTemplate;
 window.handleFileSelect = handleFileSelect;
 window.processPDF = processPDF;
+function doLogout() {
+  localStorage.removeItem("iocfo_login");
+  const overlay = document.getElementById("loginOverlay");
+  const main = document.getElementById("mainContent");
+  if (overlay) overlay.style.display = "flex";
+  if (main) main.style.display = "none";
+  document.getElementById("loginUsername").value = "";
+  document.getElementById("loginPassword").value = "";
+  document.getElementById("rememberMe").checked = false;
+  hideLoginError();
+  const btn = document.getElementById("loginBtn");
+  if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
+}
+
+window.doLogout = doLogout;

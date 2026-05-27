@@ -390,11 +390,23 @@ body {
 <!-- ===== MAIN CONTENT ===== -->
 <div id="mainContent">
 
-<div class="header">
+<div class="header" style="position: relative;">
   <h1>Annual Report Generator</h1>
   <p>Excel to Word with full formatting</p>
+  <button onclick="doLogout()" style="
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+  " title="Logout">Logout</button>
 </div>
-
 <div class="card">
   <div class="card-title" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
     <span>Annual Report Automation</span>
