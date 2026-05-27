@@ -17,7 +17,7 @@ Office.onReady((info) => {
 
 async function downloadTemplate() {
   try {
-    const response = await fetch("../../assets/Excel_Template.xlsx");
+    const response = await fetch("assets/Excel_Template.xlsx");
     if (!response.ok) { console.log("Template file not found!"); return; }
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
@@ -248,7 +248,7 @@ function cleanHeading(text) {
 }
 
 async function buildExcelFromParagraphs(paragraphs) {
-  const response = await fetch("../../assets/Excel_Template.xlsx");
+  const response = await fetch("assets/Excel_Template.xlsx");
   if (!response.ok) throw new Error("Template file not found in assets folder");
   const templateBuffer = await response.arrayBuffer();
   const workbook = new ExcelJS.Workbook();
