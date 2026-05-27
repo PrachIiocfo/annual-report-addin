@@ -116,7 +116,11 @@ async function doLogin() {
     usersSheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       const u = String(row.getCell(1).value || "").trim();
-      const p = String(row.getCell(2).value || "").trim();
+      let pVal = row.getCell(2).value;
+if (pVal && typeof pVal === "object") {
+  pVal = pVal.text || pVal.hyperlink || pVal.formula || "";
+}
+const p = String(pVal || "").trim();
       console.log("Row " + rowNumber + " - User:", JSON.stringify(u), "| Pass:", JSON.stringify(p));
       if (u.toLowerCase() === username.toLowerCase() && p === password) {
         matched = true;
