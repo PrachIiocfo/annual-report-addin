@@ -12,8 +12,130 @@ const BORDER_LIGHT = "B4C8DC";
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
     console.log("Office ready!");
+    checkRememberedLogin();
   }
 });
+
+// ============================================================
+// LOGIN SYSTEM
+// ============================================================
+
+function checkRememberedLogin() {
+  try {
+    const saved = localStorage.getItem("iocfo_login");
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.expiry && data.expiry > Date.now()) {
+        showMainContent();
+        return;
+      }
+      localStorage.removeItem("iocfo_login");
+    }
+  } catch (e) { console.warn(e); }
+  
+  // Allow Enter key on login fields
+  const userInput = document.getElementById("loginUsername");
+  const passInput = document.getElementById("loginPassword");
+  if (userInput) userInput.addEventListener("keypress", (e) => { if (e.key === "Enter") doLogin(); });
+  if (passInput) passInput.addEventListener("keypress", (e) => { if (e.key === "Enter") doLogin(); });
+}
+
+function showLoginError(msg) {
+  const err = document.getElementById("loginError");
+  if (err) {
+    err.style.display = "block";
+    err.innerText = msg;
+  }
+}
+
+function hideLoginError() {
+  const err = document.getElementById("loginError");
+  if (err) err.style.display = "none";
+}
+
+function showMainContent() {
+  const overlay = document.getElementById("loginOverlay");
+  const main = document.getElementById("mainContent");
+  if (overlay) overlay.style.display = "none";
+  if (main) main.style.display = "block";
+}
+
+async function doLogin() {
+  hideLoginError();
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+  const remember = document.getElementById("rememberMe").checked;
+  
+  if (!username || !password) {
+    showLoginError("Please enter both username and password");
+    return;
+  }
+  
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.innerText = "Signing in...";
+  
+  try {
+    const response = await fetch("assets/Users.xlsx");
+    if (!response.ok) {
+      showLoginError("Unable to verify credentials. Please try again.");
+      btn.disabled = false;
+      btn.innerText = "Sign In";
+      return;
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    
+    let usersSheet = workbook.getWorksheet("Users");
+    if (!usersSheet) {
+      for (const ws of workbook.worksheets) {
+        if (ws.name.toLowerCase().includes("user")) { usersSheet = ws; break; }
+      }
+    }
+    
+    if (!usersSheet) {
+      showLoginError("User database not found");
+      btn.disabled = false;
+      btn.innerText = "Sign In";
+      return;
+    }
+    
+    let matched = false;
+    usersSheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // Skip header
+      const u = String(row.getCell(1).value || "").trim();
+      const p = String(row.getCell(2).value || "").trim();
+      if (u.toLowerCase() === username.toLowerCase() && p === password) {
+        matched = true;
+      }
+    });
+    
+    if (matched) {
+      if (remember) {
+        const expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
+        localStorage.setItem("iocfo_login", JSON.stringify({ username, expiry }));
+      }
+      showMainContent();
+    } else {
+      showLoginError("Invalid username or password");
+      btn.disabled = false;
+      btn.innerText = "Sign In";
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    showLoginError("Login failed. Please try again.");
+    btn.disabled = false;
+    btn.innerText = "Sign In";
+  }
+}
+
+window.doLogin = doLogin;
+
+// ============================================================
+// EXISTING CODE (unchanged)
+// ============================================================
 
 async function downloadTemplate() {
   try {
@@ -408,7 +530,6 @@ async function generate() {
     console.log("Dynamic Map:", dynMap);
     const userName = (Office.context && Office.context.displayName) || "User";
 
-    // Track missing DVs across the whole document
     const missingDVs = new Set();
 
     const meta = {
@@ -519,10 +640,6 @@ function buildDynMap(rows, scaleStr) {
   return map;
 }
 
-// ============================================================
-// Splits text into segments: { type: "text"|"missing", text: "..." }
-// Used for highlighting missing DVs in red/yellow
-// ============================================================
 function replaceDynWithMissing(text, map, missingSet) {
   const segments = [];
   const str = String(text || "");
@@ -764,7 +881,6 @@ function kvTable(d, rows) {
   const bs = { top: b, bottom: b, left: b, right: b };
   const tr = rows.map((kv, i) => {
     const bg = i % 2 === 1 ? "F4F7FC" : "FFFFFF";
-    // Highlight Missing DV rows in light red
     const isMissingRow = String(kv[0]).indexOf("Missing Dynamic Values") >= 0 && kv[1] !== "0" && kv[1] !== "None";
     const rowBg = isMissingRow ? "FEE2E2" : bg;
     const labelColor = isMissingRow ? "991B1B" : DARK_BLUE;
@@ -837,9 +953,6 @@ function makeBody(d, t) {
   return new d.Paragraph({ alignment: d.AlignmentType.JUSTIFIED, children: [new d.TextRun({ text: t, color: TEXT_DARK, font: "Arial", size: 20 })], spacing: { after: 120 } });
 }
 
-// ============================================================
-// NEW: makeBodyWithSegments — renders text with highlighted missing DVs
-// ============================================================
 function makeBodyWithSegments(d, segments) {
   const runs = segments.map(seg => {
     if (seg.type === "missing") {
