@@ -66,6 +66,10 @@ async function doLogin() {
   const password = document.getElementById("loginPassword").value.trim();
   const remember = document.getElementById("rememberMe").checked;
   
+  console.log("=== LOGIN ATTEMPT ===");
+  console.log("Entered Username:", JSON.stringify(username));
+  console.log("Entered Password:", JSON.stringify(password));
+  
   if (!username || !password) {
     showLoginError("Please enter both username and password");
     return;
@@ -77,6 +81,8 @@ async function doLogin() {
   
   try {
     const response = await fetch("assets/Users.xlsx");
+    console.log("Fetch status:", response.status, response.ok);
+    
     if (!response.ok) {
       showLoginError("Unable to verify credentials. Please try again.");
       btn.disabled = false;
@@ -87,6 +93,8 @@ async function doLogin() {
     const buffer = await response.arrayBuffer();
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer);
+    
+    console.log("Sheets in Users.xlsx:", workbook.worksheets.map(s => s.name));
     
     let usersSheet = workbook.getWorksheet("Users");
     if (!usersSheet) {
@@ -102,19 +110,23 @@ async function doLogin() {
       return;
     }
     
+    console.log("Using sheet:", usersSheet.name);
+    
     let matched = false;
     usersSheet.eachRow((row, rowNumber) => {
-      if (rowNumber === 1) return; // Skip header
+      if (rowNumber === 1) return;
       const u = String(row.getCell(1).value || "").trim();
       const p = String(row.getCell(2).value || "").trim();
+      console.log("Row " + rowNumber + " - User:", JSON.stringify(u), "| Pass:", JSON.stringify(p));
       if (u.toLowerCase() === username.toLowerCase() && p === password) {
         matched = true;
+        console.log("✓ MATCH FOUND!");
       }
     });
     
     if (matched) {
       if (remember) {
-        const expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
+        const expiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
         localStorage.setItem("iocfo_login", JSON.stringify({ username, expiry }));
       }
       showMainContent();
@@ -125,13 +137,11 @@ async function doLogin() {
     }
   } catch (err) {
     console.error("Login error:", err);
-    showLoginError("Login failed. Please try again.");
+    showLoginError("Login failed: " + err.message);
     btn.disabled = false;
     btn.innerText = "Sign In";
   }
 }
-
-window.doLogin = doLogin;
 
 // ============================================================
 // EXISTING CODE (unchanged)
