@@ -222,13 +222,240 @@ body {
 #pdfStatus.info { background: #dbeafe; color: #1e40af; }
 #pdfStatus.success { background: #dcfce7; color: #166534; }
 #pdfStatus.error { background: #fee2e2; color: #991b1b; }
+
+/* ===== LOGIN OVERLAY ===== */
+#loginOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #f8f9fc 0%, #e0e7ff 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 8px 32px rgba(30, 58, 138, 0.15);
+  width: 100%;
+  max-width: 340px;
+  border: 1px solid #e5e8f0;
+}
+.login-logo {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 4px;
+  letter-spacing: -1px;
+}
+.login-logo span { color: #0284c7; font-style: italic; }
+.login-tagline {
+  text-align: center;
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+.login-welcome {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+.login-subtitle {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+.login-field {
+  margin-bottom: 14px;
+}
+.login-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.login-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s;
+  font-family: inherit;
+}
+.login-field input:focus {
+  border-color: #1e3a8a;
+}
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #4b5563;
+}
+.remember-row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+.remember-row label { cursor: pointer; }
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #1e3a8a, #3b5fb8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-login:hover:not(:disabled) { opacity: 0.92; }
+.login-error {
+  display: none;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  margin-bottom: 12px;
+  border-left: 3px solid #dc2626;
+}
+.login-footer {
+  text-align: center;
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+#mainContent {
+  display: none;
+}
 </style>
 </head>
 <body>
 
-<div class="header">
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo"><span>i</span>OCFO</div>
+    <div class="login-tagline">Finance Automation • SAP EPM</div>
+    
+    <div class="login-welcome">Welcome!</div>
+    <div class="login-subtitle">Sign in to access Annual Report Generator</div>
+    
+    <div id="loginError" class="login-error"></div>
+    
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="Enter your username" autocomplete="off">
+    </div>
+    
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="off">
+    </div>
+    
+    <div class="remember-row">
+      <input type="checkbox" id="rememberMe">
+      <label for="rememberMe">Remember me for 7 days</label>
+    </div>
+    
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In</button>
+    
+    <div class="login-footer">
+      © 2026 iOCFO Consulting Pvt. Ltd.
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div id="mainContent">
+
+<div class="header" style="position: relative;">
   <h1>Annual Report Generator</h1>
   <p>Excel to Word with full formatting</p>
+  
+  <!-- User Icon -->
+  <div onclick="toggleUserMenu()" id="userIconBtn" style="
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    user-select: none;
+  " title="Account">
+    <div id="userInitial" style="
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    ">U</div>
+    <span id="chevronIcon" style="color: white; font-size: 10px;">▼</span>
+  </div>
+  
+  <!-- Dropdown Menu -->
+  <div id="userMenu" style="
+    display: none;
+    position: absolute;
+    top: 52px;
+    right: 14px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e5e8f0;
+    box-shadow: 0 4px 16px rgba(30,58,138,0.15);
+    min-width: 170px;
+    overflow: hidden;
+    z-index: 100;
+  ">
+    <div style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9;">
+      <div style="font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Signed in as</div>
+      <div id="loggedInUser" style="font-size: 13px; font-weight: 700; color: #1e3a8a;">User</div>
+    </div>
+    <div onclick="doLogout()" style="
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #dc2626;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    " onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+      <span style="font-size: 14px;">⏻</span>
+      <span>Sign Out</span>
+    </div>
+  </div>
 </div>
 
 <div class="card">
@@ -315,6 +542,9 @@ body {
     Finance Automation • SAP EPM
   </div>
 </div>
+
+</div>
+<!-- ===== END MAIN CONTENT ===== -->
 
 <script src="taskpane.js"></script>
 <script>

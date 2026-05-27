@@ -393,19 +393,69 @@ body {
 <div class="header" style="position: relative;">
   <h1>Annual Report Generator</h1>
   <p>Excel to Word with full formatting</p>
-  <button onclick="doLogout()" style="
+  
+  <!-- User Icon -->
+  <div onclick="toggleUserMenu()" id="userIconBtn" style="
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     background: rgba(255,255,255,0.2);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.4);
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 10.5px;
-    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
     cursor: pointer;
-  " title="Logout">Logout</button>
+    user-select: none;
+  " title="Account">
+    <div id="userInitial" style="
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    ">U</div>
+    <span id="chevronIcon" style="color: white; font-size: 10px;">▼</span>
+  </div>
+  
+  <!-- Dropdown Menu -->
+  <div id="userMenu" style="
+    display: none;
+    position: absolute;
+    top: 52px;
+    right: 14px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e5e8f0;
+    box-shadow: 0 4px 16px rgba(30,58,138,0.15);
+    min-width: 170px;
+    overflow: hidden;
+    z-index: 100;
+  ">
+    <div style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9;">
+      <div style="font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Signed in as</div>
+      <div id="loggedInUser" style="font-size: 13px; font-weight: 700; color: #1e3a8a;">User</div>
+    </div>
+    <div onclick="doLogout()" style="
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #dc2626;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    " onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+      <span style="font-size: 14px;">⏻</span>
+      <span>Sign Out</span>
+    </div>
+  </div>
 </div>
 <div class="card">
   <div class="card-title" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">

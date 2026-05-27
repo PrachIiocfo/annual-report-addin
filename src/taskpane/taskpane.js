@@ -26,6 +26,8 @@ function checkRememberedLogin() {
     if (saved) {
       const data = JSON.parse(saved);
       if (data.expiry && data.expiry > Date.now()) {
+        sessionStorage.setItem("iocfo_currentUser", data.username);
+        updateUserUI(data.username);
         showMainContent();
         return;
       }
@@ -133,6 +135,8 @@ const p = String(pVal || "").trim();
         const expiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
         localStorage.setItem("iocfo_login", JSON.stringify({ username, expiry }));
       }
+      sessionStorage.setItem("iocfo_currentUser", username);
+      updateUserUI(username);
       showMainContent();
     } else {
       showLoginError("Invalid username or password");
@@ -1058,3 +1062,35 @@ function doLogout() {
 }
 
 window.doLogout = doLogout;
+function updateUserUI(username) {
+  const initial = document.getElementById("userInitial");
+  const loggedInUser = document.getElementById("loggedInUser");
+  if (initial) initial.innerText = username.charAt(0).toUpperCase();
+  if (loggedInUser) loggedInUser.innerText = username;
+}
+
+function toggleUserMenu() {
+  const menu = document.getElementById("userMenu");
+  const chevron = document.getElementById("chevronIcon");
+  if (menu) {
+    if (menu.style.display === "none" || menu.style.display === "") {
+      menu.style.display = "block";
+      if (chevron) chevron.innerText = "▲";
+    } else {
+      menu.style.display = "none";
+      if (chevron) chevron.innerText = "▼";
+    }
+  }
+}
+
+document.addEventListener("click", function(e) {
+  const menu = document.getElementById("userMenu");
+  const btn = document.getElementById("userIconBtn");
+  if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = "none";
+    const chevron = document.getElementById("chevronIcon");
+    if (chevron) chevron.innerText = "▼";
+  }
+});
+
+window.toggleUserMenu = toggleUserMenu;
