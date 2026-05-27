@@ -42,6 +42,24 @@ body {
   margin-bottom: 14px;
   padding-bottom: 8px;
   border-bottom: 2px solid #dbeafe;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #0284c7;
+  color: white;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: 'Times New Roman', serif;
+  font-style: italic;
+  cursor: help;
 }
 .info-text {
   font-size: 12px;
@@ -214,24 +232,10 @@ body {
 </div>
 
 <div class="card">
-  <div class="card-title">Annual Report Automation</div>
-  <div class="info-text">
-    <span style="
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      background: #0284c7;
-      color: white;
-      border-radius: 50%;
-      font-size: 12px;
-      font-weight: bold;
-      font-family: 'Times New Roman', serif;
-      font-style: italic;
-      margin-right: 6px;
-      vertical-align: middle;
-    ">i</span>Convert structured Excel data into publication-ready Word documents.
+  <div class="card-title" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
+    <span>Annual Report Automation</span>
+    <span class="info-icon" title="Annual Report Generator converts structured Excel data into publication-ready Word documents. The tool reads paragraphs, tables, and dynamic values from your workbook and applies version-specific formatting, scale, and company branding automatically.">i</span>
+  </div>
 </div>
 
 <button class="btn-primary" id="genBtn" onclick="generate()">
