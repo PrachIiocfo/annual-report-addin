@@ -864,7 +864,7 @@ function numberer() {
     sn[k] = n;
     return { number: n };
   }
-  return { assign };
+  return { assign, counters: function() { return c.slice(); } };
 }
 
 function appendix(d, B, m, pc, sc, ti) {
@@ -1176,15 +1176,21 @@ function buildRefMap(paraRows, version) {
       if (seen[t]) ft.push(null); else { seen[t] = true; ft.push(t); }
     }
 
-    let paraNumber = "";
     for (let l = 1; l <= 5; l++) {
       const ht = ft[l - 1];
-      if (!ht) continue;
-      if (!gPH[ht]) {
-        const res = nf.assign(ht, l);
-        gPH[ht] = res.number;
-      }
-      paraNumber = gPH[ht].replace(/\.$/, "");
+      if (!ht || gPH[ht]) continue;
+      gPH[ht] = true;
+      nf.assign(ht, l);
+    }
+
+    let paraNumber = "";
+    const cnt = nf.counters();
+    if (cnt[0] > 0) {
+      paraNumber = String(cnt[0]);
+      if (cnt[1] > 0) paraNumber += "." + cnt[1];
+      if (cnt[2] > 0) paraNumber += "." + cnt[2];
+      if (cnt[3] > 0) paraNumber += "(" + toLetter(cnt[3]) + ")";
+      if (cnt[4] > 0) paraNumber += "(" + toRoman(cnt[4]) + ")";
     }
 
     if (!paraNumber) paraNumber = lastNumber;
@@ -1211,4 +1217,14 @@ function replaceParaRefs(text, refMap) {
     return match;
   });
   return str;
+}
+function toLetter(n) {
+  let r = "", x = n;
+  while (x > 0) { const m = (x - 1) % 26; r = String.fromCharCode(97 + m) + r; x = Math.floor((x - 1) / 26); }
+  return r;
+}
+
+function toRoman(n) {
+  const m = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
+  return n <= 20 ? m[n] : String(n);
 }
