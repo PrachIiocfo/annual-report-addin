@@ -743,6 +743,9 @@ async function buildDoc(paraRows, dynMap, tableMap, B, version, meta) {
   const d = docx;
   const usedT = {}, gPH = {};
   let tablesInc = 0;
+
+  // ===== PASS 1: Build Para_ID → Number reference map =====
+  const refMap = buildRefMap(paraRows, version);
   const pageHeader = makeHeader(d, B, meta.logoBase64);
 
   const titleSec = [
@@ -812,6 +815,7 @@ async function buildDoc(paraRows, dynMap, tableMap, B, version, meta) {
     if (cL6 >= 0) {
       let body = cleanStr(String(row[cL6] || ""));
       if (body) {
+        body = replaceParaRefs(body, refMap);
         const segments = replaceDynWithMissing(body, dynMap, meta.missingDVs);
         cur.push(makeBodyWithSegments(d, segments));
       }
@@ -1094,36 +1098,84 @@ document.addEventListener("click", function(e) {
 });
 
 window.toggleUserMenu = toggleUserMenu;
-function updateUserUI(username) {
-  const initial = document.getElementById("userInitial");
-  const loggedInUser = document.getElementById("loggedInUser");
-  if (initial) initial.innerText = username.charAt(0).toUpperCase();
-  if (loggedInUser) loggedInUser.innerText = username;
-}
+// ============================================================
+// CROSS-REFERENCE: Build Para_ID → heading number map
+// ============================================================
+function buildRefMap(paraRows, version) {
+  const refMap = {};
+  if (!paraRows || paraRows.length < 2) return refMap;
 
-function toggleUserMenu() {
-  const menu = document.getElementById("userMenu");
-  const chevron = document.getElementById("chevronIcon");
-  if (menu) {
-    if (menu.style.display === "none" || menu.style.display === "") {
-      menu.style.display = "block";
-      if (chevron) chevron.innerText = "▲";
-    } else {
-      menu.style.display = "none";
-      if (chevron) chevron.innerText = "▼";
+  const hr = paraRows[0] || [];
+  const cP = findColIdx(hr, "Para");
+  const cL = [findColIdx(hr, "Level 1"), findColIdx(hr, "Level 2"), findColIdx(hr, "Level 3"), findColIdx(hr, "Level 4"), findColIdx(hr, "Level 5")];
+  const cV = findExactCol(hr, version);
+
+  const nf = numberer();
+  const stk = ["", "", "", "", ""];
+  const gPH = {};
+  let lastNumber = "";
+
+  for (let i = 1; i < paraRows.length; i++) {
+    const row = paraRows[i];
+    let emp = true;
+    for (let c = 0; c < hr.length; c++) if (String(row[c] || "").trim() !== "") { emp = false; break; }
+    if (emp) continue;
+    if (cV >= 0 && String(row[cV] || "").trim().toUpperCase() !== "Y") continue;
+
+    const pid = normalizeId(String(row[cP] || ""));
+
+    const rt = [];
+    for (let l = 1; l <= 5; l++) { const ci = cL[l - 1]; rt.push(ci < 0 ? "" : cleanStr(String(row[ci] || ""))); }
+    let hf = -1;
+    for (let l = 0; l < 5; l++) if (rt[l]) { hf = l; break; }
+    const et = [];
+    if (hf === -1) { for (let l = 0; l < 5; l++) et.push(""); }
+    else {
+      for (let l = 0; l < hf; l++) et.push(stk[l]);
+      et.push(rt[hf]); stk[hf] = rt[hf];
+      for (let l = hf + 1; l < 5; l++) stk[l] = "";
+      for (let l = hf + 1; l < 5; l++) { if (rt[l]) { et.push(rt[l]); stk[l] = rt[l]; } else et.push(""); }
+    }
+    const seen = {}, ft = [];
+    for (let l = 0; l < 5; l++) {
+      const t = et[l];
+      if (!t) { ft.push(null); continue; }
+      if (seen[t]) ft.push(null); else { seen[t] = true; ft.push(t); }
+    }
+
+    let paraNumber = "";
+    for (let l = 1; l <= 5; l++) {
+      const ht = ft[l - 1];
+      if (!ht || gPH[ht]) {
+        if (ht && gPH[ht]) paraNumber = gPH[ht];
+        continue;
+      }
+      const res = nf.assign(ht, l);
+      gPH[ht] = res.number;
+      paraNumber = res.number;
+    }
+
+    if (!paraNumber) paraNumber = lastNumber;
+    else lastNumber = paraNumber;
+
+    if (pid && paraNumber) {
+      refMap[pid] = paraNumber.replace(/\.$/, "");
     }
   }
+  return refMap;
 }
 
-document.addEventListener("click", function(e) {
-  const menu = document.getElementById("userMenu");
-  const btn = document.getElementById("userIconBtn");
-  if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
-    menu.style.display = "none";
-    const chevron = document.getElementById("chevronIcon");
-    if (chevron) chevron.innerText = "▼";
-  }
-});
-
-window.toggleUserMenu = toggleUserMenu;
-window.updateUserUI = updateUserUI;
+// ============================================================
+// Replace "Para_XX" references in body text with their number
+// ============================================================
+function replaceParaRefs(text, refMap) {
+  let str = String(text || "");
+  str = str.replace(/"?\s*(Para[_\s]*0*\d+)\s*"?/gi, function(match, paraId) {
+    const normalized = normalizeId(paraId);
+    if (refMap[normalized]) {
+      return refMap[normalized];
+    }
+    return match;
+  });
+  return str;
+}
