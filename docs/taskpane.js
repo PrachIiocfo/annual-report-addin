@@ -1176,29 +1176,15 @@ function buildRefMap(paraRows, version) {
       if (seen[t]) ft.push(null); else { seen[t] = true; ft.push(t); }
     }
 
-    const fullPath = [];
+    let paraNumber = "";
     for (let l = 1; l <= 5; l++) {
       const ht = ft[l - 1];
       if (!ht) continue;
-      if (gPH[ht]) {
-        fullPath[l - 1] = gPH[ht];
-      } else {
+      if (!gPH[ht]) {
         const res = nf.assign(ht, l);
         gPH[ht] = res.number;
-        fullPath[l - 1] = res.number;
       }
-    }
-
-    // Build the active full path from stack tracking
-    let paraNumber = "";
-    const activePath = [];
-    for (let l = 0; l < 5; l++) {
-      if (stk[l] && gPH[stk[l]]) {
-        activePath.push(gPH[stk[l]].replace(/\.$/, ""));
-      }
-    }
-    if (activePath.length > 0) {
-      paraNumber = activePath.join("");
+      paraNumber = gPH[ht].replace(/\.$/, "");
     }
 
     if (!paraNumber) paraNumber = lastNumber;
@@ -1207,6 +1193,7 @@ function buildRefMap(paraRows, version) {
     if (pid && paraNumber) {
       refMap[pid] = paraNumber;
     }
+ 
   }
   return refMap;
 }
