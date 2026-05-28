@@ -1207,6 +1207,7 @@ function buildRefMap(paraRows, version) {
     if (pid && paraNumber) {
       refMap[pid] = paraNumber;
     }
+  }
   return refMap;
 }
 
